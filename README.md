@@ -36,6 +36,8 @@ Then run it:
 
 Starting rodo without arguments will use '~/plan.md'
 
+Note: Rodo requires Ruby 2.7 and higher due to using the pattern matching `case` statement.
+
 ## Usage
 
 TODO: Write usage instructions here
