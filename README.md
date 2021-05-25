@@ -19,7 +19,7 @@ Rodo is programmed in Ruby and uses `ncurses` under the hood.
 Rodo is work in progress but can already be used for basic todo tracking. Currently the following features are supported:
 
 - Command mode, single line edit mode, journalling mode.
-- Append, Insert, Edit, Kill, <kbd>⭾ TAB</kbd> and <kbd><kbd>⇧ Shift</kbd>+<kbd>⭾ TAB</kbd></kbd> to indent and unindent, Save+Quit <kbd>Q</kbd>
+- Append, Insert, Edit, Kill, <kbd>⭾TAB</kbd> and <kbd>⇧Shift+⭾TAB</kbd></kbd> to indent and unindent, Save+Quit <kbd>Q</kbd>
 - CTRL+C will exit without saving
 - Bracketed paste support allows to paste from the clipboard without seeing indentation artifacts.
 - Backup before save (stored to `_bak\`)
