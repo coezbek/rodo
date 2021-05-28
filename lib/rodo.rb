@@ -13,7 +13,7 @@ require_relative "rodo/version"
 #  <left, right> go to subtasks
 #  <enter> edit current todo
 #  p <n> = Postpone for <n> days. If <n> is left blank, postpone to tomorrow (config_postpone_days_default)
-#  w <n> = Mark this entry as waiting for a response. This will mark this todo complete 
+#  w <n> = Mark this entry as waiting for a response. This will mark this todo complete
 #          but create a todo in the future (<n> days) to check for the result actually being complete
 #          If <n> is left blank will postpone until next week (7 days, config_waiting_days_default)
 #  t (today) = Create a new journal entry for the current date (today), marks all unfinished todos of the current day as [u] and copies them as
@@ -35,10 +35,11 @@ class Rodo
   include Commands
 
   attr_accessor :file_name
-  attr_accessor :win1, :win1b, :win2
+  attr_accessor :win1, :win1b
   attr_accessor :cursor_line, :cursor_x, :current_day_index, :newly_added_line
   attr_accessor :journal
   attr_accessor :mode
+  attr_accessor :debug
 
   def init
     Curses.ESCDELAY = 50        # 50 milliseconds (ESC is always a key, never a sequence until automatic)
@@ -74,6 +75,7 @@ class Rodo
     @mode = :scroll
     @current_day_index = @journal.most_recent_index
     @newly_added_line = nil
+    @debug = $DEBUG || $VERBOSE || ENV["BUNDLE_BIN_PATH"]
   end
 
   def main_loop
@@ -113,19 +115,23 @@ class Rodo
   def build_windows
 
     @win1.close if @win1
-    @win2.close if @win2
+    if Curses.debug_win
+      Curses.debug_win.close
+      Curses.debug_win = nil
+    end
 
     # Building a static window
-    @win1 = Curses::Window.new(Curses.lines, Curses.cols / 2, 0, 0)
+    @win1 = Curses::Window.new(Curses.lines, Curses.cols / (@debug ? 2 : 1), 0, 0)
     @win1.keypad = true
     @win1b = @win1.subwin(@win1.maxy - 2, @win1.maxx - 3, 1, 2)
 
-    @win2 = Curses::Window.new(Curses.lines, Curses.cols / 2, 0, Curses.cols / 2)
-    @win2.box
-    @win2.caption "Debug information"
-    @win2.refresh
-    @win2 = @win2.inset
-    Curses.debug_win= @win2
+    if @debug
+      debug_win = Curses::Window.new(Curses.lines, Curses.cols / 2, 0, Curses.cols / 2)
+      debug_win.box
+      debug_win.caption "Debug information"
+      debug_win.refresh
+      Curses.debug_win = debug_win.inset
+    end
   end
 
   def get_cmd(win, pos_y, pos_x, command_prototyp_list)
@@ -176,7 +182,7 @@ class Rodo
 
     }
 
-    # @win2.puts "Result: #{result}"
+    # Curses.debug_win.puts "Result: #{result}"
 
     return result
   end
@@ -187,10 +193,12 @@ class Rodo
 
     @win1.box
 
-    @win2.setpos(0, 0)
-    @win2.puts "Cursor @ #{@cursor_line}"
-    @win2.puts "Mode: #{@mode}"
-    @win2.refresh
+    if Curses.debug_win
+      Curses.debug_win.setpos(0, 0)
+      Curses.debug_win.puts "Cursor @ #{@cursor_line}"
+      Curses.debug_win.puts "Mode: #{@mode}"
+      Curses.debug_win.refresh
+    end
 
     # Next / prev Navigation
     has_next_day = @current_day_index > 0
@@ -222,12 +230,16 @@ class Rodo
          @win1b.puts line
       else
         line = line + " "
-        @win2.puts "Before Cursor: '#{line[...@cursor_x]}'"
-        @win2.puts "Cursor_x: '#{@cursor_x}'"
+
+        if Curses.debug_win
+          Curses.debug_win.puts "Before Cursor: '#{line[...@cursor_x]}'"
+          Curses.debug_win.puts "Cursor_x: '#{@cursor_x}'"
+          Curses.debug_win.refresh
+        end
+
         @cursor_x = 0 if ![:edit, :journalling].include?(@mode)
         @cursor_x = line.size - 1 if @cursor_x >= line.size
 
-        @win2.refresh
         @win1b.addstr line[...@cursor_x] if @cursor_x > 0
         @win1b.attron(Curses::A_REVERSE)
         @win1b.addstr line[@cursor_x]
@@ -246,7 +258,7 @@ class Rodo
   def process_paste(pasted)
 
     pasted.gsub! /\r\n?/, "\n"
-    # @win2.puts "Pasted: #{pasted.inspect}"
+    # Curses.debug "Pasted: #{pasted.inspect}"
 
     current_day = @journal.days[@current_day_index]
     lines = current_day.lines
@@ -441,8 +453,10 @@ class Rodo
         end
 
       else
-        @win2.puts "Char not handled: " + Curses::char_info(char)
-        @win2.refresh
+        if Curses.debug_win
+          Curses.debug_win.puts "Char not handled: " + Curses::char_info(char)
+          Curses.debug_win.refresh
+        end
       end
 
     when :edit
@@ -500,8 +514,7 @@ class Rodo
           @win1b.clear
         end
         # Debug:
-        # @win2.puts "Lines[@cursor_line] == #{lines[@cursor_line].inspect }, @newly_added_line == #{@newly_added_line.inspect}"
-        # @win2.refresh
+        # Curses.debug "Lines[@cursor_line] == #{lines[@cursor_line].inspect }, @newly_added_line == #{@newly_added_line.inspect}"
 
         @mode = :scroll
         @newly_added_line = nil
@@ -527,8 +540,10 @@ class Rodo
         end
 
       else
-        @win2.puts "Char not handled: " + Curses::char_info(char)
-        @win2.refresh
+        if Curses.debug_win
+          Curses.debug_win.puts "Char not handled: " + Curses::char_info(char)
+          Curses.debug_win.refresh
+        end
       end
 
     when :scroll
@@ -540,6 +555,10 @@ class Rodo
           File.write(@file_name, @journal.to_s)
 
           return :close
+
+        when '~'
+          @debug = !@debug
+          build_windows
 
         when CTRLC, CTRLC.chr
           return :close
@@ -599,8 +618,10 @@ class Rodo
                 end
                 next false
               else
-                @win2.puts "Unknown command enter from F1: #{cmd}"
-                @win2.refresh
+                if Curses.debug_win
+                  Curses.debug_win.puts "Unknown command enter from F1: #{cmd}"
+                  Curses.debug_win.refresh
+                end
               end
             }
           end
@@ -694,8 +715,10 @@ class Rodo
           postpone(lines, current_day, 1)
 
         else
-          @win2.puts "Char not handled: " + Curses::char_info(char)
-          @win2.refresh
+          if Curses.debug_win
+            Curses.debug_win.puts "Char not handled: " + Curses::char_info(char)
+            Curses.debug_win.refresh
+          end
       end
 
     when :move
@@ -739,8 +762,7 @@ class Rodo
           @mode = :scroll
 
         else
-          @win2.puts "Char not handled: " + Curses::char_info(char)
-          @win2.refresh
+          Curses.debug "Char not handled: " + Curses::char_info(char)
       end
     else
       Curses.abort "Mode #{@mode} not handled"

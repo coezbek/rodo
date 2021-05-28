@@ -10,6 +10,13 @@ module Curses
     @@debug_win
   end
 
+  def self.debug message
+    if @@debug_win
+      @@debug_win.puts message
+      @@debug_win.refresh
+    end
+  end
+
   # Switch on bracketed paste mode
   # and reset it at end of application
   def self.bracketed_paste
@@ -60,11 +67,8 @@ module Curses
     def addstr_with_cursor(line, cursor_x)
       line = line + " "
 
-      if Curses.debug_win
-        Curses.debug_win.puts "Before Cursor: '#{line[...cursor_x]}'"
-        Curses.debug_win.puts "Cursor_x: '#{cursor_x}'"
-        Curses.debug_win.refresh
-      end
+      Curses.debug "Before Cursor: '#{line[...cursor_x]}'"
+      Curses.debug "Cursor_x: '#{cursor_x}'"
 
       cursor_x = 0 if cursor_x < 0
       cursor_x = line.size - 1 if cursor_x >= line.size
@@ -211,10 +215,7 @@ module Curses
           cursor_x += 1
 
         else
-          if Curses.debug_win
-            Curses.debug_win.puts "Char not handled: " + Curses::char_info(char)
-            Curses.debug_win.refresh
-          end
+          Curses.debug "Char not handled: " + Curses::char_info(char)
         end
 
       end
@@ -248,7 +249,7 @@ module Curses
       key = Curses::ch2key(char)
       return "Char: #{char} - Class Integer " + (key != nil ? "Constant: #{key}" : "To chr(): #{char.chr}")
 
-#    when String
+    # when String
 
     else
       return "Char: #{char.inspect} - Class: #{char.class}"
