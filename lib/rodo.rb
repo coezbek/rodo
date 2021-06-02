@@ -714,10 +714,8 @@ class Rodo
 
         when 't' # t(oday)
 
-          current_day = current_day.close
-          insertion_index = @journal.days.index { |d| current_day.date >= d.date } || 0
-          @journal.days.insert(insertion_index, current_day)
-          @current_day_index = insertion_index
+          @current_day_index = @journal.close(current_day)
+          @current_day = @journal.days[@current_day_index]
           @win1b.clear
 
         when 'k' # kill
