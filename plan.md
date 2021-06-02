@@ -1,11 +1,7 @@
-# 2021-05-27 Thu
+# 2021-06-02
 
 Todos until Rodo 0.1.0
- - [ ] When closing merge text with existing days
- - [x] Only start debug window when run with ruby $DEBUG
- - [x] Use Shift+~ to Toogle Debug Console
- - [x] Copy and Paste with Bracketed Paste mode and some basic clean-ups (tabs)
- - [ ] CTRL+Cursor Keys should navigate in text line
+ - [ ] Release
 
 Todos for Rodo 0.2.0 and later
  - [ ] When postponing copy section headers and parent todos
@@ -16,6 +12,42 @@ Todos for Rodo 0.2.0 and later
  - [ ] Montly Log Mode
  - [ ] Copy and Paste from <ul>/<ol> and OneNote
  - [ ] Improve command palette with support for cursor keys
+
+# 2021-05-30 Sun
+
+Todos until Rodo 0.1.0
+ - [x] When closing merge text, with existing days
+ - [x] Add some tests
+ - [>] Release
+
+Todos for Rodo 0.2.0 and later
+ - [>] When postponing copy section headers and parent todos
+ - [>] When closing days, use a checkmark to mark the day as done
+ - [>] Multiline/wrap support
+ - [>] Autosave
+ - [>] Add migration mode
+ - [>] Montly Log Mode
+ - [>] Copy and Paste from <ul>/<ol> and OneNote
+ - [>] Improve command palette with support for cursor keys
+
+# 2021-05-27 Thu
+
+Todos until Rodo 0.1.0
+ - [>] When closing merge text with existing days
+ - [x] Only start debug window when run with ruby $DEBUG
+ - [x] Use Shift+~ to Toogle Debug Console
+ - [x] Copy and Paste with Bracketed Paste mode and some basic clean-ups (tabs)
+ - [x] CTRL+Cursor Keys should navigate in text line
+
+Todos for Rodo 0.2.0 and later
+ - [>] When postponing copy section headers and parent todos
+ - [>] When closing days, use a checkmark to mark the day as done
+ - [>] Multiline/wrap support
+ - [>] Autosave
+ - [>] Add migration mode
+ - [>] Montly Log Mode
+ - [>] Copy and Paste from <ul>/<ol> and OneNote
+ - [>] Improve command palette with support for cursor keys
 
 # 2021-05-26 Wed
 
