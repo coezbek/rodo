@@ -358,6 +358,33 @@ class Rodo
           @cursor_x += 1 if @cursor_x < lines[@cursor_line].length - 1
         end
 
+      when Curses::KEY_CTRL_LEFT
+
+        if @cursor_x == 0
+          if @cursor_line > 0
+            @cursor_line -= 1
+            @cursor_x = lines[@cursor_line].length
+          end
+        end
+
+        left = lines[@cursor_line][0...@cursor_x]
+        if /\b?((^|\S+)\s*)$/ =~ left
+          @cursor_x -= $1.length
+        end
+
+      when Curses::KEY_CTRL_RIGHT
+
+        if @cursor_x >= lines[@cursor_line].length - 1
+          if @cursor_line < lines.size - 1
+            @cursor_line += 1
+            @cursor_x = 0
+          end
+        end
+        right = lines[@cursor_line][@cursor_x..-1]
+        if /^(\s*\S+\b?\s*)/ =~ right
+          @cursor_x += $1.length
+        end
+
       when Curses::KEY_DC, "\u0004" # DEL, CTRL+D
 
         if @cursor_x >= lines[@cursor_line].size
@@ -488,6 +515,20 @@ class Rodo
       when Curses::KEY_RIGHT
 
         @cursor_x += 1 if @cursor_x < lines[@cursor_line].length - 1
+
+      when Curses::KEY_CTRL_LEFT
+
+        left = lines[@cursor_line][0...@cursor_x]
+        if /((^|\w+?|\W+?)\s*)$/ =~ left
+          @cursor_x -= $1.length
+        end
+
+      when Curses::KEY_CTRL_RIGHT
+
+        right = lines[@cursor_line][@cursor_x..-1]
+        if /^(\s*|\S+\s*)/ =~ right
+          @cursor_x += $1.length
+        end
 
       when Curses::KEY_DC, "\u0004" # DEL, CTRL+D
 
