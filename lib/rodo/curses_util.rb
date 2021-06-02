@@ -258,10 +258,15 @@ module Curses
 
   def self.ch2key(ch)
 
-    @@map ||= Curses.constants(false).to_h { |s| [Curses.const_get(s), s] }
-
+    if !defined?(@@map)
+      @@map = {}
+      Curses.constants(false).each { |s|
+        c = Curses.const_get(s)
+        @@map[c] ||= []
+        @@map[c] << s
+      }
+    end
     @@map[ch]
-
   end
 
   def self.abort(msg)
