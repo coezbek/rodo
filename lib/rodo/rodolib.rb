@@ -59,17 +59,71 @@ class Journal
     days.map { |day| day.to_s }.join("\n\n")
   end
 
-  def postpone(day, number_of_days_to_postpone)
-
-    number_of_days_to_postpone = 1 if number_of_days_to_postpone < 1
-
-    target_date = (day.date || Date.today).next_day(number_of_days_to_postpone)
+  # Returns the TodoDay for the given date creating it if it doesn't exist
+  def ensure_day(target_date)
     index = days.find_index { |x| x.date <= target_date } || -1
 
     if index < 0 || days[index].date != target_date
       days.insert(index, TodoDay.new(["# #{target_date.strftime("%Y-%m-%d")}"]))
     end
     return days[index]
+  end
+
+  # Returns the day, number of days in the future from the given day
+  def postpone(day, number_of_days_to_postpone=1)
+
+    number_of_days_to_postpone = 1 if number_of_days_to_postpone < 1
+
+    target_date = (day.date || Date.today).next_day(number_of_days_to_postpone)
+    return ensure_day(target_date)
+  end
+
+  # Postpones all unfinished todos to today's date
+  # Returns the index of the target date to which things were postponed
+  def close(day)
+
+    unfinished_lines = [nil] * day.lines.size
+
+    day.lines.each_with_index { |line, index|
+      if line =~ /^\s*(-\s+)?\[(.)\]/
+
+        if $2 == " "
+          # Copy all unfinished tasks and...
+          unfinished_lines[index] = line.dup
+
+          # ...their parent entries (recursively)
+          parent_index = index
+          while (parent_index = day.parent_index(parent_index)) != nil
+            unfinished_lines[parent_index] ||= day.lines[parent_index].dup
+          end
+          line.sub!(/\[\s\]/, "[>]")
+        end
+
+      # Copy top level structure:
+      elsif !(line =~ /^\s*[-*]\s+/ || line =~ /^\s*#\s/)
+        unfinished_lines[index] = line.dup
+      end
+    }
+
+    if unfinished_lines[0] =~ /^\s*\#\s*(\d\d\d\d-\d\d-\d\d)/
+      unfinished_lines.shift
+    end
+
+    target_day = ensure_day(Date.today)
+    if target_day == day
+      # When closing on the same day: append hour and minutes
+      newDate = "# #{Time.now.strftime("%Y-%m-%d %a %H:%M")}"
+      target_day = TodoDay.new([newDate])
+      insertion_index = days.index { |d| target_day.date >= d.date } || 0
+      days.insert(insertion_index, target_day)
+    end
+
+    # Only append empty lines
+    unfinished_lines.select! { |l| l != nil }
+
+    target_day.lines.concat(unfinished_lines)
+
+    return days.find_index(target_day)
   end
 
   def most_recent_index
@@ -116,6 +170,29 @@ class TodoDay
 
     option = "" if !option
     return lead + option.rstrip + " "
+  end
+
+  # Returns the number of leading spaces of the given line
+  def indent_depth(line_index)
+    return nil if lines[line_index].strip.length == 0
+
+    lines[line_index][/\A\s*/].length
+  end
+
+  # Returns the line index of the parent line if any or nil
+  # The parent line is the line with a reduced indentation or the section header in case there no reduced indented line
+  def parent_index(line_index)
+    j = line_index - 1
+    my_indent = indent_depth(line_index)
+    return nil if !my_indent
+    while j > 0 # Day header does not count as parent
+      other_indent = indent_depth(j)
+      if other_indent && other_indent < my_indent
+        return j
+      end
+      j -= 1
+    end
+    return nil
   end
 
   def close()
