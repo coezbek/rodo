@@ -1,4 +1,9 @@
+require 'curses'
+
 module Curses
+
+  KEY_CTRL_RIGHT = Curses::REQ_SCR_FCHAR
+  KEY_CTRL_LEFT = Curses::REQ_DEL_CHAR
 
   @@debug_win = nil
 
