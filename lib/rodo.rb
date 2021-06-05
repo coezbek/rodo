@@ -738,7 +738,7 @@ class Rodo
             end
 
             # Get target day (and create if it doesn't exist) and add there
-            postpone_day = @journal.postpone(current_day, 7)
+            postpone_day = @journal.postpone_day(current_day, 7)
             postpone_day.lines.insert(1, line_to_wait_for)
 
             # Adjust @current_day_index if a new day was created
@@ -812,25 +812,11 @@ class Rodo
 
   def postpone(lines, current_day, n)
 
-    if lines[@cursor_line] =~ /\[\s\]/
 
-      # Get target day (and create if it doesn't exist) and add there
-      postpone_day = @journal.postpone(current_day, n)
-      postpone_day.lines.insert(1, lines[@cursor_line])
+    target_day = @journal.postpone_line(current_day, @cursor_line, n)
 
-      # Adjust @current_day_index if a new day was created
-      @current_day_index += 1 if current_day != @journal.days[@current_day_index]
-
-      # Delete here
-      if lines.size > 1
-        lines.delete_at(@cursor_line)
-        @cursor_line -= 1 if @cursor_line >= lines.size
-      else
-        lines[0] = "".dup
-      end
-      @win1b.clear
-
-    end
+    # Adjust @current_day_index if a new day was created
+    @current_day_index += 1 if current_day != @journal.days[@current_day_index]
   end
 
 end

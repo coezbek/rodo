@@ -2,6 +2,8 @@
 
 Todos until Rodo 0.1.0
  - [ ] Release
+ - [x] Improve postponing, so that it merges better with day closure.
+ - [ ] Test on Mac
 
 Todos for Rodo 0.2.0 and later
  - [ ] When postponing copy section headers and parent todos

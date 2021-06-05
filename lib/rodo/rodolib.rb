@@ -56,7 +56,7 @@ class Journal
   end
 
   def to_s
-    days.map { |day| day.to_s }.join("\n\n")
+    days.map { |day| day.to_s }.join("\n\n") + (days.empty? ? "" : "\n")
   end
 
   # Returns the TodoDay for the given date creating it if it doesn't exist
@@ -70,12 +70,59 @@ class Journal
   end
 
   # Returns the day, number of days in the future from the given day
-  def postpone(day, number_of_days_to_postpone=1)
+  def postpone_day(day, number_of_days_to_postpone=1)
 
     number_of_days_to_postpone = 1 if number_of_days_to_postpone < 1
 
     target_date = (day.date || Date.today).next_day(number_of_days_to_postpone)
     return ensure_day(target_date)
+  end
+
+  # Postpone the given line on the given day by the given number of days, default=1
+  #
+  # Returns false, if there is no todo which can be postponed on the given line
+  # Returns the target date to which the line was moved if successful.
+  def postpone_line(day, line_index, number_of_days_to_postpone=1)
+
+    line = day.lines[line_index]
+
+    # Postpone only works for todos
+    return false if !(line =~ /^\s*(-\s+)?\[(.)\]/)
+
+    # Postpone only works for unfinished todos
+    return false if $2 != " "
+
+    # First create the target day
+    target_day = postpone_day(day, number_of_days_to_postpone)
+
+    # Determine all affected lines
+    unfinished_lines = [nil] * day.lines.size
+
+    # Copy all unfinished tasks and...
+    unfinished_lines[line_index] = line.dup
+
+    # ...their parent entries (recursively)
+    parent_index = line_index
+    while (parent_index = day.parent_index(parent_index)) != nil
+      unfinished_lines[parent_index] ||= day.lines[parent_index].dup
+    end
+
+    # ...and the children as well!
+
+    # Mark line itself as postponed
+    line.sub!(/\[\s\]/, "[>]")
+
+    # Get rid of primary header
+    if unfinished_lines[0] =~ /^\s*\#\s*(\d\d\d\d-\d\d-\d\d)/
+      unfinished_lines.shift
+    end
+
+    # Only append non-empty lines
+    unfinished_lines.select! { |l| l != nil }
+
+    target_day.merge_lines(unfinished_lines)
+
+    return target_day
   end
 
   # Postpones all unfinished todos to today's date
@@ -118,10 +165,10 @@ class Journal
       days.insert(insertion_index, target_day)
     end
 
-    # Only append empty lines
+    # Only append non-empty lines
     unfinished_lines.select! { |l| l != nil }
 
-    target_day.lines.concat(unfinished_lines)
+    target_day.merge_lines(unfinished_lines)
 
     return days.find_index(target_day)
   end
@@ -174,7 +221,7 @@ class TodoDay
 
   # Returns the number of leading spaces of the given line
   def indent_depth(line_index)
-    return nil if lines[line_index].strip.length == 0
+    return nil if !lines[line_index] || lines[line_index].strip.length == 0
 
     lines[line_index][/\A\s*/].length
   end
@@ -193,6 +240,30 @@ class TodoDay
       j -= 1
     end
     return nil
+  end
+
+  # Turns the linear list of lines of this TodoDay into a nested structure of the form
+  # [{text: "text", children: [...]}, ...]
+  # where ... is the same hash structure {text: "text", children: [...]}
+  def structure
+
+    indents = [nil] * lines.size
+    (lines.size - 1).downto(0).each { |i|
+      indents[i] = indent_depth(i) || (i+1 < indents.size ? indents[i+1] : 0)
+    }
+
+    stack = [{depth: -1, children: []}]
+    lines.each_with_index { |s, i|
+      indent = indents[i]
+      new_child = {depth: indent, text: s, index: i, children: []}
+      while indent <= stack.last[:depth]
+        stack.pop
+      end
+      stack.last[:children] << new_child
+      stack << new_child
+    }
+
+    return stack.first[:children]
   end
 
   def close()
@@ -224,6 +295,50 @@ class TodoDay
 
     return TodoDay.new([newDate, *unfinished_lines])
 
+  end
+
+  # Merge alls entries from source into target
+  def merge_structures(target, source)
+
+    to_append = []
+    source.each { |new_block|
+      existing_block = target.find { |existing_block|
+        new_block != nil && existing_block != nil && new_block[:text] != "" && new_block[:text] == existing_block[:text]
+      }
+
+      if existing_block
+        merge_structures(existing_block[:children], new_block[:children])
+      else
+        # Append to end
+        target << new_block.dup
+      end
+    }
+  end
+
+  def self.structure_to_a(structure)
+    result = []
+    structure.each { |block|
+      result << block[:text]
+      result.concat(structure_to_a(block[:children]))
+    }
+    return result
+  end
+
+  def merge_lines(lines_to_append)
+
+    return if lines_to_append.empty?
+
+    end_lines = []
+    end_lines << lines.pop while lines.last.strip.size == 0
+
+    my_structure = structure
+    ap_structure = TodoDay.new(lines_to_append).structure
+
+    merge_structures(my_structure, ap_structure)
+
+    @lines = TodoDay::structure_to_a(my_structure)
+
+    lines.concat(end_lines)
   end
 
 end
