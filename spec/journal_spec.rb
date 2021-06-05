@@ -1,3 +1,5 @@
+require 'rodo'
+
 describe Journal do
 
   before do
@@ -15,12 +17,133 @@ describe Journal do
     EOL
     )
 
-    postponed_day = j.postpone(j.days[0], 1)
+    postponed_day = j.postpone_day(j.days[0], 1)
 
     expect(postponed_day.date).to eql(Date.new(2021, 5, 31))
     expect(j.days.size).to eql(3)
     expect(j.days[0]).to eql(postponed_day)
 
+  end
+
+  it "Journal::postpone_line will move line to new day" do
+
+    j = Journal.from_s(<<~EOL
+      # 2021-05-30
+       - [ ] My Todo
+
+      # 2021-05-29
+       - [ ] My old Todo
+    EOL
+    )
+
+    postponed_day = j.postpone_line(j.days[0], 1, 1)
+
+    expect(postponed_day.date).to eql(Date.new(2021, 5, 31))
+    expect(j.days.size).to eql(3)
+    expect(j.days[0]).to eql(postponed_day)
+
+    expect(j.to_s).to eql(<<~EOL
+      # 2021-05-31
+       - [ ] My Todo
+
+      # 2021-05-30
+       - [>] My Todo
+
+      # 2021-05-29
+       - [ ] My old Todo
+    EOL
+    )
+  end
+
+  it "Journal::postpone_line will move line and heading to new day and maintain spacing" do
+
+    j = Journal.from_s(<<~EOL
+      # 2021-05-30
+
+      Section
+       - [ ] My Todo
+
+      # 2021-05-29
+       - [ ] My old Todo
+    EOL
+    )
+
+    postponed_day = j.postpone_line(j.days[0], 3, 1)
+
+    expect(j.days[0].to_s).to eql(<<~EOL
+      # 2021-05-31
+
+      Section
+       - [ ] My Todo
+
+    EOL
+    )
+  end
+
+  it "Journal::postpone_line will merge with existing headings" do
+
+    j = Journal.from_s(<<~EOL
+      # 2021-05-31
+
+      Section 1
+       - [ ] My Waiting Todo
+
+      # 2021-05-30
+
+      Section 1
+       - [ ] My Todo 1
+
+      Section 2
+       - [ ] My Todo 2
+
+    EOL
+    )
+
+    postponed_day = j.postpone_line(j.days[1], 3, 1)
+    expect(postponed_day.date).to eql(Date.new(2021, 5, 31))
+
+    expect(j.days[0].to_s).to eql(<<~EOL.chomp
+      # 2021-05-31
+
+      Section 1
+       - [ ] My Waiting Todo
+       - [ ] My Todo 1
+      EOL
+    )
+  end
+
+  it "Journal::postpone_line will maintain section ordering" do
+
+    j = Journal.from_s(<<~EOL
+      # 2021-05-31
+
+      Section 2
+       - [ ] My Waiting Todo
+
+      # 2021-05-30
+
+      Section 1
+       - [ ] My Todo 1
+
+      Section 2
+       - [ ] My Todo 2
+
+    EOL
+    )
+
+    postponed_day = j.postpone_line(j.days[1], 3, 1)
+    expect(postponed_day.date).to eql(Date.new(2021, 5, 31))
+
+    expect(j.days[0].to_s).to eql(<<~EOL.chomp
+      # 2021-05-31
+
+      Section 1
+      - [ ] My Todo 1
+
+      Section 2
+       - [ ] My Waiting Todo
+      EOL
+    )
   end
 
   it "Journal::postpone will reuse existing day" do
@@ -34,7 +157,7 @@ describe Journal do
     EOL
     )
 
-    postponed_day = j.postpone(j.days[1], 1)
+    postponed_day = j.postpone_day(j.days[1], 1)
 
     expect(postponed_day.date).to eql(Date.new(2021, 5, 30))
     expect(j.days.size).to eql(2)
@@ -55,38 +178,11 @@ describe Journal do
     EOL
     )
 
-    postponed_day = j.postpone(j.days[2], 1)
+    postponed_day = j.postpone_day(j.days[2], 1)
 
     expect(postponed_day.date).to eql(Date.new(2021, 5, 30))
     expect(j.days.size).to eql(3)
     expect(j.days[0]).to eql(postponed_day)
-  end
-
-  it "TodoDay::parent will not get confused by newlines" do
-
-    j = Journal.from_s(<<~EOL + "\n         " # Add line with just spaces
-      # 2021-05-30
-
-       - [ ] Main Todo 1
-
-      Heading 1
-
-       - [ ] Main Todo 2
-
-         - [ ] Sub Todo
-
-      Heading 2
-
-       - [ ] Empty Space todo
-    EOL
-    )
-
-    expect(j.days[0].parent_index(8)).to eql(6)
-    expect(j.days[0].parent_index(6)).to eql(4)
-    expect(j.days[0].parent_index(4)).to eql(nil)
-    expect(j.days[0].parent_index(2)).to eql(nil)
-    expect(j.days[0].parent_index(0)).to eql(nil)
-    expect(j.days[0].parent_index(13)).to eql(nil)
   end
 
   it "Journal::close basic test case" do

@@ -220,6 +220,33 @@ describe TodoDay do
     )
   end
 
+  it "TodoDay::parent will not get confused by newlines" do
+
+    j = Journal.from_s(<<~EOL + "\n         " # Add line with just spaces
+      # 2021-05-30
+
+       - [ ] Main Todo 1
+
+      Heading 1
+
+       - [ ] Main Todo 2
+
+         - [ ] Sub Todo
+
+      Heading 2
+
+       - [ ] Empty Space todo
+    EOL
+    )
+
+    expect(j.days[0].parent_index(8)).to eql(6)
+    expect(j.days[0].parent_index(6)).to eql(4)
+    expect(j.days[0].parent_index(4)).to eql(nil)
+    expect(j.days[0].parent_index(2)).to eql(nil)
+    expect(j.days[0].parent_index(0)).to eql(nil)
+    expect(j.days[0].parent_index(13)).to eql(nil)
+  end
+
   it "TodoDay::merge case with complicated newlines" do
 
     j = Journal.from_s(<<~EOL
@@ -257,6 +284,39 @@ describe TodoDay do
 
       Project Todos:
        - [ ] Setup project schedule
+
+      # 2021-05-29
+       - [ ] My old Todo
+    EOL
+    )
+  end
+
+  it "TodoDay::merge_lines and maintain order of new sections" do
+
+    j = Journal.from_s(<<~EOL
+      # 2021-05-30
+
+      Project Todos:
+       - [ ] Setup project schedule
+
+      # 2021-05-29
+       - [ ] My old Todo
+    EOL
+    )
+
+    j.days[0].merge_lines(["Journal:", " - This was a nice day", "Project Todos:", " - [x] Draft whitepaper"])
+
+    expect(j.days.size).to eql(2)
+
+    expect(j.to_s).to eql(<<~EOL
+      # 2021-05-30
+
+      Journal:
+       - This was a nice day
+
+      Project Todos:
+       - [ ] Setup project schedule
+       - [x] Draft whitepaper
 
       # 2021-05-29
        - [ ] My old Todo
