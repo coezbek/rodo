@@ -107,7 +107,15 @@ class Journal
       unfinished_lines[parent_index] ||= day.lines[parent_index].dup
     end
 
+    # Copy up to 1 whitespace line preceeding
+    unfinished_lines.each_with_index { |e, i|
+      if e != nil && i != 0 && day.indent_depth(i - 1) == nil
+        unfinished_lines[i-1] = ""
+      end
+    }
+
     # ...and the children as well!
+    # TODO
 
     # Mark line itself as postponed
     line.sub!(/\[\s\]/, "[>]")
