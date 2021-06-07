@@ -70,12 +70,11 @@ describe Journal do
 
     postponed_day = j.postpone_line(j.days[0], 3, 1)
 
-    expect(j.days[0].to_s).to eql(<<~EOL
+    expect(j.days[0].to_s).to eql(<<~EOL.chomp
       # 2021-05-31
 
       Section
        - [ ] My Todo
-
     EOL
     )
   end

@@ -306,21 +306,43 @@ class TodoDay
   end
 
   # Merge alls entries from source into target
-  def merge_structures(target, source)
+  def self.merge_structures(target, source)
 
-    to_append = []
+    # Attempt 1.3:
+    to_prepend = []
     source.each { |new_block|
-      existing_block = target.find { |existing_block|
+      existing_block_index = target.find_index { |existing_block|
         new_block != nil && existing_block != nil && new_block[:text] != "" && new_block[:text] == existing_block[:text]
       }
 
-      if existing_block
+      if existing_block_index
+        existing_block = target[existing_block_index]
+
+        # Insert everything in the to_prepend queue at the given position...
+
+        # ... but merge whitespace now
+        whitespace_check_index = existing_block_index - 1
+        while whitespace_check_index >=0 && to_prepend.size > 0 && to_prepend[0][:text] == "" && target[whitespace_check_index][:text] = ""
+          to_prepend.shift
+          whitespace_check_index -= 1
+        end
+
+        target.insert(existing_block_index, *to_prepend)
+
+        # Start queue from scratch
+        to_prepend = []
         merge_structures(existing_block[:children], new_block[:children])
       else
-        # Append to end
-        target << new_block.dup
+        to_prepend << new_block.dup
       end
     }
+    # Everything that couldn't be matched, goes to the end
+    # TODO Whitespace merging
+    target.concat(to_prepend)
+
+    TodoDay::structure_reindex(target)
+
+    return target
   end
 
   def self.structure_to_a(structure)
@@ -330,6 +352,15 @@ class TodoDay
       result.concat(structure_to_a(block[:children]))
     }
     return result
+  end
+
+  # Will traverse the given structure and update all indices to be in increasing order
+  def self.structure_reindex(structure, index = 0)
+    structure.each { |block|
+      block[:index] = index
+      index = structure_reindex(block[:children], index + 1)
+    }
+    return index
   end
 
   def merge_lines(lines_to_append)
@@ -342,7 +373,7 @@ class TodoDay
     my_structure = structure
     ap_structure = TodoDay.new(lines_to_append).structure
 
-    merge_structures(my_structure, ap_structure)
+    TodoDay::merge_structures(my_structure, ap_structure)
 
     @lines = TodoDay::structure_to_a(my_structure)
 

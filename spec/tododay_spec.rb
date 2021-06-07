@@ -304,7 +304,7 @@ describe TodoDay do
     EOL
     )
 
-    j.days[0].merge_lines(["Journal:", " - This was a nice day", "Project Todos:", " - [x] Draft whitepaper"])
+    j.days[0].merge_lines(["", "Journal:", " - This was a nice day", "", "Project Todos:", " - [x] Draft whitepaper"])
 
     expect(j.days.size).to eql(2)
 
@@ -324,4 +324,38 @@ describe TodoDay do
     )
   end
 
+  it "TodoDay::structure_merge will maintain section ordering" do
+
+    j = Journal.from_s(<<~EOL
+      # 2021-05-30
+
+      Project Todos:
+       - [ ] Setup project schedule
+
+      # 2021-05-29
+       - [ ] My old Todo
+    EOL
+    )
+
+    s1 = j.days[0].structure
+    s2 = TodoDay.new(["", "Journal:", " - This was a nice day", "", "Project Todos:", " - [x] Draft whitepaper"]).structure
+    TodoDay::merge_structures(s1, s2)
+
+    expect(s1).to eql(
+      [
+        {:children=>[], :depth=>0, :index=>0, :text=>"# 2021-05-30"},
+        {:children=>[], :depth=>0, :index=>1, :text=>""},
+        { :depth=>0, :index=>2, :text=>"Journal:",
+          :children=> [{:children=>[], :depth=>1, :index=>3, :text=>" - This was a nice day"}],
+        },
+        {:children=>[], :depth=>0, :index=>4, :text=>""},
+        {:depth=>0, :index=>5, :text=>"Project Todos:", :children=>
+           [{:children=>[],
+             :depth=>1,
+            :index=>6,
+           :text=>" - [ ] Setup project schedule"},
+          {:children=>[], :depth=>1, :index=>7, :text=>" - [x] Draft whitepaper"}],
+        },
+        {:children=>[], :depth=>0, :index=>8, :text=>""}])
+  end
 end
