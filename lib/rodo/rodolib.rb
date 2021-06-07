@@ -274,7 +274,7 @@ class TodoDay
     return stack.first[:children]
   end
 
-  def close()
+  def close
 
     unfinished_lines = []
     lines.each { |line|
