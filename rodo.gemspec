@@ -31,5 +31,7 @@ Gem::Specification.new do |spec|
 
   # Runtime dependencies
   spec.add_dependency "curses", "~> 1.4"
+
+  # Development dependencies
   spec.add_development_dependency "rspec", "~> 3.10"
 end
