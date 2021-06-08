@@ -28,6 +28,16 @@ Rodo is work in progress but can already be used for basic todo tracking. Curren
 - Bracketed paste support allows to paste from the clipboard without seeing indentation artifacts.
 - Backup before save (stored to `_bak\`)
 
+## Things not working currently
+
+Rodo comes with no warranty and is still rough. The most notable things missing in the release 0.1.0:
+
+ - No undo/redo
+ - No autosave
+ - No scrolling
+ - No mouse interaction
+ - No special handling for any markdown except unordered lists, headings and todos.
+
 ## Installation & First Run
 
 Install the `rodo` gem locally
@@ -38,9 +48,11 @@ Then run it:
 
     $ rodo
 
-Starting rodo without arguments will use '~/plan.md'
+Starting rodo without arguments will use '~/plan.md' as the markdown file.
 
 Note: Rodo requires Ruby 2.7 and higher due to using the pattern matching `case` statement.
+
+Note: When running with `rbenv` you need to `rbenv rehash` after you installed the gem for the command line wrapper to become visible on the path.
 
 ## Usage
 
