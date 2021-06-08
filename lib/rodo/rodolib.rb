@@ -69,12 +69,16 @@ class Journal
     return days[index]
   end
 
-  # Returns the day, number of days in the future from the given day
+  # Returns the day, number of days in the future from the given day, but at never before today
   def postpone_day(day, number_of_days_to_postpone=1)
 
     number_of_days_to_postpone = 1 if number_of_days_to_postpone < 1
 
     target_date = (day.date || Date.today).next_day(number_of_days_to_postpone)
+
+    # target_date shouldn't be in the past
+    target_date = Date.today if target_date.to_date < Date.today
+
     return ensure_day(target_date)
   end
 

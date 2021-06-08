@@ -3,7 +3,7 @@
 Todos until Rodo 0.1.0
  - [ ] Release
  - [x] Improve postponing, so that it merges better with day closure.
- - [ ] Postponing should postpone at least 1 day, but never to a day in the past (same with close)
+ - [x] Postponing should postpone at least 1 day, but never to a day in the past (same with close)
  - [x] Add support for shadow cursor
  - [ ] Test on Mac
 
