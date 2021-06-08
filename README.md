@@ -80,7 +80,7 @@ By default rodo is in `scroll` mode, with the following keys supported:
 In `editing` mode most keys will just create resulting in typing, except:
 
  - <kbd>CTRL+A</kbd>, <kbd>CTRL+E</kbd> Put cursor at start of line, end of line.
- - <kbd>⭾TAB</kbd> and <kbd>CTRL+RIGHT<kbd> Move to beginning/end of next/previous word. 
+ - <kbd>⭾TAB</kbd> and <kbd>CTRL+RIGHT</kbd> Move to beginning/end of next/previous word. 
 
 ## Development
 
