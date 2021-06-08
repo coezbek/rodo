@@ -1,6 +1,10 @@
 # Rodo
 Rodo is terminal-based todo manager written in Ruby with a inbox-zero mentality. It takes inspiration from bullet journalling.
 
+## Screenshot
+
+![Screenshot of Rodo used on plan.md from this repository](https://user-images.githubusercontent.com/12127567/121207217-67065b80-c879-11eb-8976-f8ba3d162341.png)
+
 ## Detail Description
 
 Rodo is a todo/task manager with a terminal-based user interface (TUI). It uses `markdown` as the underlying file format, which allows you to also edit the resulting todo files with any other text editor. Rodo structures your todos primarily using dates ("What do I need to do today?") and only then using sub-sections for projects.
