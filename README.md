@@ -56,7 +56,31 @@ Note: When running with `rbenv` you need to `rbenv rehash` after you installed t
 
 ## Usage
 
-TODO: Write usage instructions here
+To run:
+
+    $ rodo [file]
+    
+By default rodo is in `scroll` mode, with the following keys supported:
+
+ - <kbd>cursor keys</kbd> Up/Down select particular line, Left/Right go to previous/next day
+ - <kbd>Q</kbd> Quit with Save
+ - <kbd>CTRL+C</kbd> Quit without Save
+ - <kbd>A</kbd> Append new todo below with same indent as current line
+ - <kbd>I</kbd> Insert new todo before the current lien with same indent as current line
+ - <kbd>K</kbd> Kill current line
+ - <kbd>P</kbd> Postpone current line to tomorrow
+ - <kbd>W</kbd> Mark current todo as waiting for reply/other person (put a reminder in 7 days)
+ - <kbd>T</kbd> Create a new entry for today's date and move all unfinished todos over.
+ - <kbd>X</kbd> Toggle current line as Complete/Incomplete
+ - <kbd>⭾TAB</kbd> and <kbd>⇧Shift+⭾TAB</kbd></kbd> to indent and unindent
+ - <kbd>ENTER</kbd> Start editing the current line. Finish editing with another `ENTER`.
+ - <kbd>E</kbd> Enter editing mode. ENTER will create a new line in this mode.
+ - <kbd>F1</kbd> See a command palette.
+
+In `editing` mode most keys will just create resulting in typing, except:
+
+ - <kbd>CTRL+A</kbd>, <kbd>CTRL+E</kbd> Put cursor at start of line, end of line.
+ - <kbd>⭾TAB</kbd> and <kbd>CTRL+RIGHT<kbd> Move to beginning/end of next/previous word. 
 
 ## Development
 
