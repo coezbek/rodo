@@ -1,14 +1,14 @@
 # 2021-06-08
 
 Todos until Rodo 0.1.0
- - [ ] Release
- - [ ] Test on Mac
- - [ ] Update README.md
- - [ ] Short introvideo
+ - [x] Release
+ - [x] Test on Mac
+ - [x] Update README.md
  - [x] Silence warnings about pattern matching
 
 Todos for Rodo 0.2.0 and later
  - [x] When postponing copy section headers and parent todos
+ - [ ] Short intro video
  - [ ] When closing days, use a checkmark to mark the day as done
  - [ ] Multiline/wrap support
  - [ ] Autosave
