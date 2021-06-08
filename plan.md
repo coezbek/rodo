@@ -1,14 +1,14 @@
-# 2021-06-02
+# 2021-06-08
 
 Todos until Rodo 0.1.0
  - [ ] Release
- - [x] Improve postponing, so that it merges better with day closure.
- - [x] Postponing should postpone at least 1 day, but never to a day in the past (same with close)
- - [x] Add support for shadow cursor
  - [ ] Test on Mac
+ - [ ] Update README.md
+ - [ ] Short introvideo
+ - [x] Silence warnings about pattern matching
 
 Todos for Rodo 0.2.0 and later
- - [ ] When postponing copy section headers and parent todos
+ - [x] When postponing copy section headers and parent todos
  - [ ] When closing days, use a checkmark to mark the day as done
  - [ ] Multiline/wrap support
  - [ ] Autosave
@@ -16,6 +16,25 @@ Todos for Rodo 0.2.0 and later
  - [ ] Montly Log Mode
  - [ ] Copy and Paste from <ul>/<ol> and OneNote
  - [ ] Improve command palette with support for cursor keys
+
+# 2021-06-02
+
+Todos until Rodo 0.1.0
+ - [>] Release
+ - [x] Improve postponing, so that it merges better with day closure.
+ - [x] Postponing should postpone at least 1 day, but never to a day in the past (same with close)
+ - [x] Add support for shadow cursor
+ - [>] Test on Mac
+
+Todos for Rodo 0.2.0 and later
+ - [>] When postponing copy section headers and parent todos
+ - [>] When closing days, use a checkmark to mark the day as done
+ - [>] Multiline/wrap support
+ - [>] Autosave
+ - [>] Add migration mode
+ - [>] Montly Log Mode
+ - [>] Copy and Paste from <ul>/<ol> and OneNote
+ - [>] Improve command palette with support for cursor keys
 
 # 2021-05-30 Sun
 

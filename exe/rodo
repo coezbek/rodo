@@ -1,6 +1,9 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+require 'warning'
+Warning.ignore(/Pattern matching is experimental/)
+
 require "bundler/setup"
 require "rodo"
 
