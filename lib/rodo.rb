@@ -75,7 +75,7 @@ class Rodo
     @cursor.day = @journal.most_recent_index
     @mode = :scroll
     @newly_added_line = nil
-    @debug = $DEBUG || $VERBOSE || ENV["BUNDLE_BIN_PATH"]
+    @debug = $DEBUG || $VERBOSE # || ENV["BUNDLE_BIN_PATH"]
   end
 
   def main_loop
