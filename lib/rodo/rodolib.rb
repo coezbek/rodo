@@ -188,6 +188,57 @@ class Journal
 
 end
 
+#
+# Encapsulates the position of the cursor in the following dimensions:
+#
+#  - which *x* position the cursor is on, on a particular *line*
+#  - which *line* the cursor is on, on a particular *day*
+#  - which *day* is currently shown on the main screen
+#  - which *x* position would be on ('shadow x'), if the line would be longer
+#  - which *line* the cursor would be on ('shadow line'), if the current day would have more lines
+#
+class Cursor
+
+  attr_accessor :journal
+  attr_accessor :day
+
+  def initialize(journal)
+    @journal = journal
+    @shadow_line = 0
+    @shadow_x = 0
+    self.day = @journal.most_recent_index
+    # self.line = 0
+    # self.x = 0
+  end
+
+  def day=(day)
+    @day = [[0, day].max, @journal.days.size - 1].min
+    @line = [@journal.days[@day].lines.size - 1, @shadow_line].min
+    @x = [@journal.days[@day].lines[@line].size, @shadow_x].min
+  end
+
+  def line=(line)
+    line = [[0, line].max, @journal.days[@day].lines.size - 1].min
+    @line = @shadow_line = line
+    @x = [@journal.days[@day].lines[@line].size, @shadow_x].min
+  end
+
+  def x=(x)
+    # note x is clamped 1 character beyond the length of the line
+    x = [[0, x].max, @journal.days[@day].lines[@line].size].min
+    @x = @shadow_x = x
+  end
+
+  def line
+    @line
+  end
+
+  def x
+    @x
+  end
+
+end
+
 # Encapsulate a single date of todo information
 class TodoDay
 
