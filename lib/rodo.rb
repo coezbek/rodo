@@ -112,6 +112,17 @@ class Rodo
     end
   end
 
+  def save
+    FileUtils.mkdir_p "_bak"
+    FileUtils.cp(@file_name,
+      File.join(
+        File.dirname(@file_name),
+        "_bak",
+        File.basename(@file_name) + "-#{Time.now.strftime("%Y-%m-%dT%H-%M-%S")}.bak"))
+    File.write(@file_name, @journal.to_s)
+    return :close
+  end
+
   def build_windows
 
     @win1.close if @win1
@@ -591,9 +602,7 @@ class Rodo
 
       case char
         when 'q'
-          FileUtils.mkdir_p "_bak"
-          FileUtils.cp(@file_name, File.join(File.dirname(@file_name), "_bak", File.basename(@file_name) + "-#{Time.now.strftime("%Y-%m-%dT%H-%M-%S")}.bak"))
-          File.write(@file_name, @journal.to_s)
+          return self.save
 
           return :close
 
@@ -764,11 +773,7 @@ class Rodo
 
       case char
         when 'q'
-          FileUtils.mkdir_p "_bak"
-          FileUtils.cp(@file_name, "_bak/" + @file_name + "-#{Time.now.strftime("%Y-%m-%dT%H-%M-%S")}.bak")
-          File.write(@file_name, @journal.to_s)
-
-          return :close
+          return self.save
 
         when CTRLC, CTRLC.chr
           return :close

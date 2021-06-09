@@ -1,3 +1,19 @@
+# 2021-06-09
+
+Todos until Rodo 0.1.1
+ - [x] Fix discrepancy for save
+ - [ ] Fix end of line one of errors with cursor movements
+
+Todos for Rodo 0.2.0 and later
+ - [ ] Short intro video
+ - [ ] When closing days, use a checkmark to mark the day as done
+ - [ ] Multiline/wrap support
+ - [ ] Autosave
+ - [ ] Add migration mode
+ - [ ] Montly Log Mode
+ - [ ] Copy and Paste from <ul>/<ol> and OneNote
+ - [ ] Improve command palette with support for cursor keys
+
 # 2021-06-08
 
 Todos until Rodo 0.1.0
@@ -8,14 +24,14 @@ Todos until Rodo 0.1.0
 
 Todos for Rodo 0.2.0 and later
  - [x] When postponing copy section headers and parent todos
- - [ ] Short intro video
- - [ ] When closing days, use a checkmark to mark the day as done
- - [ ] Multiline/wrap support
- - [ ] Autosave
- - [ ] Add migration mode
- - [ ] Montly Log Mode
- - [ ] Copy and Paste from <ul>/<ol> and OneNote
- - [ ] Improve command palette with support for cursor keys
+ - [>] Short intro video
+ - [>] When closing days, use a checkmark to mark the day as done
+ - [>] Multiline/wrap support
+ - [>] Autosave
+ - [>] Add migration mode
+ - [>] Montly Log Mode
+ - [>] Copy and Paste from <ul>/<ol> and OneNote
+ - [>] Improve command palette with support for cursor keys
 
 # 2021-06-02
 
