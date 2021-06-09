@@ -1,3 +1,22 @@
+# 2021-06-09
+
+Todos for Rodo 0.2.0
+ - [ ] Better dirty region handling
+ - [ ] Fix: deleting lines with backspace doesn't update dirty region
+ - [ ] Print short message when exiting that files are saved
+ - [ ] Lock plan.md while being open in Rodo
+ - [ ] Short intro video
+ - [ ] When closing days, use a checkmark to mark the day as done
+ - [ ] Multiline/wrap support
+ - [ ] Autosave
+ - [ ] Add migration mode
+ - [ ] Montly Log Mode
+ - [ ] Copy and Paste from <ul>/<ol> and OneNote
+ - [ ] Improve command palette with support for cursor keys
+
+Todos for Rodo 0.3.0
+ - [ ] Multiview
+
 # 2021-06-08
 
 Todos until Rodo 0.1.0
@@ -8,14 +27,14 @@ Todos until Rodo 0.1.0
 
 Todos for Rodo 0.2.0 and later
  - [x] When postponing copy section headers and parent todos
- - [ ] Short intro video
- - [ ] When closing days, use a checkmark to mark the day as done
- - [ ] Multiline/wrap support
- - [ ] Autosave
- - [ ] Add migration mode
- - [ ] Montly Log Mode
- - [ ] Copy and Paste from <ul>/<ol> and OneNote
- - [ ] Improve command palette with support for cursor keys
+ - [>] Short intro video
+ - [>] When closing days, use a checkmark to mark the day as done
+ - [>] Multiline/wrap support
+ - [>] Autosave
+ - [>] Add migration mode
+ - [>] Montly Log Mode
+ - [>] Copy and Paste from <ul>/<ol> and OneNote
+ - [>] Improve command palette with support for cursor keys
 
 # 2021-06-02
 
