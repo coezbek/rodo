@@ -360,13 +360,13 @@ class Rodo
 
       when Curses::KEY_RIGHT
 
-        if @cursor.x >= lines[@cursor.line].length - 1
+        if @cursor.x >= lines[@cursor.line].length
           if @cursor.line < lines.size - 1
             @cursor.line += 1
             @cursor.x = 0
           end
         else
-          @cursor.x += 1 if @cursor.x < lines[@cursor.line].length - 1
+          @cursor.x += 1 if @cursor.x < lines[@cursor.line].length
         end
 
       when Curses::KEY_CTRL_LEFT
@@ -504,13 +504,6 @@ class Rodo
       when CTRLC, CTRLC.chr
         return :close
 
-      #when CTRLA then buffer.beginning_of_line
-      #when CTRLE then buffer.end_of_line
-      #when Curses::KEY_UP
-      #  @cursor.line -= 1 if @cursor.line > 0
-      #when Curses::KEY_DOWN
-      #  @cursor.line += 1 if @cursor.line < lines.size - 1
-
       when "\u0001" # CTRL+A
 
         @cursor.x = 0
@@ -525,7 +518,7 @@ class Rodo
 
       when Curses::KEY_RIGHT
 
-        @cursor.x += 1 if @cursor.x < lines[@cursor.line].length - 1
+        @cursor.x += 1 if @cursor.x < lines[@cursor.line].length
 
       when Curses::KEY_CTRL_LEFT
 
@@ -604,17 +597,13 @@ class Rodo
         when 'q'
           return self.save
 
+        when CTRLC, CTRLC.chr
           return :close
 
         when '~'
           @debug = !@debug
           build_windows
 
-        when CTRLC, CTRLC.chr
-          return :close
-
-        #when CTRLA then buffer.beginning_of_line
-        #when CTRLE then buffer.end_of_line
         when Curses::KEY_UP
           @cursor.line -= 1 if @cursor.line > 0
 

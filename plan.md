@@ -2,7 +2,7 @@
 
 Todos until Rodo 0.1.1
  - [x] Fix discrepancy for save
- - [ ] Fix end of line one of errors with cursor movements
+ - [x] Fix end of line one of errors with cursor movements
 
 Todos for Rodo 0.2.0 and later
  - [ ] Short intro video
