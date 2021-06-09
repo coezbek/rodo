@@ -36,7 +36,8 @@ Rodo comes with no warranty and is still rough. The most notable things missing 
  - No autosave
  - No scrolling
  - No mouse interaction
- - No special handling for any markdown except unordered lists, headings and todos.
+ - No special handling for any markdown except unordered lists, headings and todos
+ - No file locking for exclusive read/write (won't change)
 
 ## Installation & First Run
 
