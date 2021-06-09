@@ -148,7 +148,7 @@ describe Journal do
   it "Journal::postpone will reuse existing day" do
 
     j = Journal.from_s(<<~EOL
-      # 2021-05-30
+      # 2021-05-31
        - [ ] My Todo
 
       # 2021-05-29
@@ -158,7 +158,7 @@ describe Journal do
 
     postponed_day = j.postpone_day(j.days[1], 1)
 
-    expect(postponed_day.date).to eql(Date.new(2021, 5, 30))
+    expect(postponed_day.date).to eql(Date.new(2021, 5, 31))
     expect(j.days.size).to eql(2)
     expect(j.days[0]).to eql(postponed_day)
   end
@@ -166,10 +166,10 @@ describe Journal do
   it "Journal::postpone will reuse later of two existing target days" do
 
     j = Journal.from_s(<<~EOL
-      # 2021-05-30 9:12
+      # 2021-05-31 9:12
        - [ ] My Todo
 
-      # 2021-05-30
+      # 2021-05-31
        - [>] My Todo
 
       # 2021-05-29
@@ -179,7 +179,7 @@ describe Journal do
 
     postponed_day = j.postpone_day(j.days[2], 1)
 
-    expect(postponed_day.date).to eql(Date.new(2021, 5, 30))
+    expect(postponed_day.date).to eql(Date.new(2021, 5, 31))
     expect(j.days.size).to eql(3)
     expect(j.days[0]).to eql(postponed_day)
   end
