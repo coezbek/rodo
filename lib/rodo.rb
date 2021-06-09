@@ -391,6 +391,7 @@ class Rodo
           if @cursor.line < lines.size - 1
             lines[@cursor.line] += lines[@cursor.line + 1]
             lines.delete_at(@cursor.line + 1)
+            @win1b.clear
           end
         else
           lines[@cursor.line].slice!(@cursor.x)
@@ -404,6 +405,7 @@ class Rodo
           @cursor.x = lines[@cursor.line].length
           lines[@cursor.line] += lines[@cursor.line + 1]
           lines.delete_at(@cursor.line + 1)
+          @win1b.clear
         elsif @cursor.x > 0
           lines[@cursor.line].slice!(@cursor.x - 1)
           @cursor.x -= 1
@@ -672,8 +674,6 @@ class Rodo
             lines[@cursor.line].sub!(/^(  |\t)/, "")
           end
 
-          #when Curses::KEY_BACKSPACE then
-        #  buffer.remove_char_before_cursor
         #when ENTER then buffer.new_line
         when '.', 'x'
           if lines[@cursor.line] =~ /\[\s\]/
