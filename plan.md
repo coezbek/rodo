@@ -1,6 +1,7 @@
 # 2021-06-09
 
 Todos for Rodo 0.2.0
+ - [x] Support for F2 to start editing (for the Excel fanatics)
  - [ ] Better dirty region handling
  - [ ] Fix: deleting lines with backspace doesn't update dirty region
  - [ ] Print short message when exiting that files are saved

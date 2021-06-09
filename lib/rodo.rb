@@ -686,7 +686,7 @@ class Rodo
         when '2'
           # ★
 
-        when 'e' # Edit
+        when 'e', Curses::KEY_F2 # Edit
           @mode = :journalling
           @cursor.x = lines[@cursor.line].length
 
