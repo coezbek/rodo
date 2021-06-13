@@ -70,7 +70,7 @@ By default rodo is in `scroll` mode, with the following keys supported:
  - <kbd>K</kbd> Kill current line
  - <kbd>P</kbd> Postpone current line to tomorrow
  - <kbd>W</kbd> Mark current todo as waiting for reply/other person (put a reminder in 7 days)
- - <kbd>T</kbd> Create a new entry for today's date and move all unfinished todos over.
+ - <kbd>T</kbd> Create a new entry for today's date and move all unfinished todos over. This will also copy all top level entries (section headers), even if they are empy.
  - <kbd>X</kbd> Toggle current line as Complete/Incomplete
  - <kbd>⭾TAB</kbd> and <kbd>⇧Shift+⭾TAB</kbd></kbd> to indent and unindent
  - <kbd>ENTER</kbd> Start editing the current line. Finish editing with another `ENTER`.
