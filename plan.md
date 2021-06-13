@@ -5,15 +5,16 @@ Todos for Rodo 0.2.0
  - [ ] Better dirty region handling
  - [x] Fix: deleting lines with backspace doesn't update dirty region
  - [ ] Print short message when exiting that files are saved
- - [ ] Lock plan.md while being open in Rodo
+ - [-] Lock plan.md while being open in Rodo => Seems not common to do this under Linux
  - [ ] Short intro video
  - [ ] When closing days, use a checkmark to mark the day as done
  - [ ] Multiline/wrap support
  - [ ] Autosave
  - [ ] Add migration mode
- - [ ] Montly Log Mode
+ - [ ] Monthly Log Mode
  - [ ] Copy and Paste from <ul>/<ol> and OneNote
  - [ ] Improve command palette with support for cursor keys
+ - [ ] CTRL+Backspace for delete word
 
 Todos for Rodo 0.3.0
  - [ ] Multiview
