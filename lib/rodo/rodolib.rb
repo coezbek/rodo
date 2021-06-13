@@ -423,7 +423,7 @@ class TodoDay
     return if lines_to_append.empty?
 
     end_lines = []
-    end_lines << lines.pop while lines.last.strip.size == 0
+    end_lines << lines.pop while lines.size > 0 && lines.last.strip.size == 0
 
     my_structure = structure
     ap_structure = TodoDay.new(lines_to_append).structure
