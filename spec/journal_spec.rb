@@ -43,7 +43,7 @@ describe Journal do
     expect(j.days[0]).to eql(postponed_day)
 
     expect(j.to_s).to eql(<<~EOL
-      # 2021-05-31
+      # 2021-05-31 Mon
        - [ ] My Todo
 
       # 2021-05-30
@@ -71,7 +71,7 @@ describe Journal do
     postponed_day = j.postpone_line(j.days[0], 3, 1)
 
     expect(j.days[0].to_s).to eql(<<~EOL.chomp
-      # 2021-05-31
+      # 2021-05-31 Mon
 
       Section
        - [ ] My Todo
@@ -211,7 +211,7 @@ describe Journal do
     expect(j.days.size).to eql(3)
     expect(i).to eql(0)
     expect(j.days[i].lines.join("\n")).to eql(<<~EOL
-      # 2021-05-31
+      # 2021-05-31 Mon
 
        - [ ] Main Todo 1
          - [ ] Sub Todo 1

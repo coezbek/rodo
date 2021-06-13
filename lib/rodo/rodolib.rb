@@ -64,7 +64,7 @@ class Journal
     index = days.find_index { |x| x.date <= target_date } || -1
 
     if index < 0 || days[index].date != target_date
-      days.insert(index, TodoDay.new(["# #{target_date.strftime("%Y-%m-%d")}"]))
+      days.insert(index, TodoDay.new(["# #{target_date.strftime("%Y-%m-%d %a")}"]))
     end
     return days[index]
   end
