@@ -2,7 +2,8 @@
 
 Todos for Rodo 0.2.0
  - [x] Support for F2 to start editing (for the Excel fanatics)
- - [ ] Better dirty region handling
+ - [x] Add Star Toggle
+ - [ ] Better dirty region handling during normal typing
  - [x] Fix: deleting lines with backspace doesn't update dirty region
  - [ ] Print short message when exiting that files are saved
  - [-] Lock plan.md while being open in Rodo => Seems not common to do this under Linux

@@ -682,7 +682,17 @@ class Rodo
         #when /[[:print:]]/ then buffer.add_char(char)
 
         when '2'
-          # ★
+
+          # If line to the left of cursor starts with "- [ ]" or with a star or dash
+          if /^(?<lead>\s+[*-]\s)(?<option>\[.\]\s)?(?<star>★\s)?(?<rest>.*?)$/ =~ lines[@cursor.line]
+
+            if star == nil
+              star = "★ "
+            else
+              star = ""
+            end
+            lines[@cursor.line] = lead + option + star + rest
+          end
 
         when 'e', Curses::KEY_F2 # Edit
           @mode = :journalling
