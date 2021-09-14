@@ -155,7 +155,7 @@ module Curses
         when '['
           return { csi: get_csi }
         else
-          Curses.unget_char(d)
+          Curses.unget_char(d) if d != nil # d == nil means timeout
           return "\e"
           # Curses.abort("Unhandled command sequence")
           # raise "¯\_(ツ)_/¯"

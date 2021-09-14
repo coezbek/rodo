@@ -25,6 +25,7 @@ require 'fileutils'
 require_relative 'rodo/curses_util'
 require_relative 'rodo/rodolib'
 require_relative 'rodo/commands'
+require_relative "rodo/backup"
 
 CTRLC = 3
 ENTER = 13
@@ -40,6 +41,18 @@ class Rodo
   attr_accessor :journal
   attr_accessor :mode
   attr_accessor :debug
+
+  def process_args
+    # If no file is given, assume the user wants to edit "~/plan.md"
+    if ARGV.empty?
+      @file_name = "plan.md"
+      Dir.chdir Dir.home
+    else
+      @file_name = ARGV[0]
+    end
+
+    return nil
+  end
 
   def init
     Curses.ESCDELAY = 50        # 50 milliseconds (ESC is always a key, never a sequence until automatic)
@@ -60,13 +73,7 @@ class Rodo
       }
     end
 
-    # If no file is given, assume the user wants to edit "~/plan.md"
-    if ARGV.empty?
-      @file_name = "plan.md"
-      Dir.chdir Dir.home
-    else
-      @file_name = ARGV[0]
-    end
+    # If file does not exist
     File.write(@file_name, "# #{Time.now.strftime("%Y-%m-%d")}\n") if !File.exist?(@file_name)
 
     @journal = Journal.from_s(File.read(@file_name))
@@ -80,7 +87,13 @@ class Rodo
 
   def main_loop
 
-    status = init()
+    status = process_args
+    return if status == :close
+
+    status = check_for_stale_backup_and_recover
+    return if status == :close
+
+    status = init
     return if status == :close
 
     begin
@@ -91,6 +104,12 @@ class Rodo
         render_windows()
 
         char = @win1::get_char3
+
+        # If the user didn't type a key for 15 seconds or after 5 minutes, auto-save to the backup file
+        if char == nil || seconds_since_last_backup >= BACKUP_MAX_BACKUP_INTERVAL_SECONDS
+          backup_auto_save
+          next if char == nil
+        end
 
         if char == Curses::KEY_RESIZE
           sleep(0.5)
@@ -112,14 +131,34 @@ class Rodo
     end
   end
 
-  def save
+  def create_bak
     FileUtils.mkdir_p "_bak"
     FileUtils.cp(@file_name,
       File.join(
         File.dirname(@file_name),
         "_bak",
         File.basename(@file_name) + "-#{Time.now.strftime("%Y-%m-%dT%H-%M-%S")}.bak"))
-    File.write(@file_name, @journal.to_s)
+  end
+
+  def save
+    create_bak
+
+    to_write = @journal.to_s
+    File.write(@file_name, to_write)
+
+    if File.read(@file_name) == to_write
+      File.delete(backup_file_name)
+    else
+      # Saving failed
+      # Make sure the backup file has a more recent modification date
+      FileUtils.touch(backup_file_name)
+    end
+
+    return :close
+  end
+
+  def close_without_save
+    File.delete(backup_file_name)
     return :close
   end
 
@@ -134,6 +173,7 @@ class Rodo
     # Building a static window
     @win1 = Curses::Window.new(Curses.lines, Curses.cols / (@debug ? 2 : 1), 0, 0)
     @win1.keypad = true
+    @win1.timeout = BACKUP_INACTIVITY_INTERVAL_SECONDS * 1000 # Use 15s inactivity as an indicator for saving automatically
     @win1b = @win1.subwin(@win1.maxy - 2, @win1.maxx - 3, 1, 2)
 
     if @debug
@@ -354,7 +394,7 @@ class Rodo
       case char
 
       when CTRLC, CTRLC.chr
-        return :close
+        return close_without_save
 
       when Curses::KEY_UP
         @cursor.line -= 1 if @cursor.line > 0
@@ -426,11 +466,13 @@ class Rodo
             lines[@cursor.line] += lines[@cursor.line + 1]
             lines.delete_at(@cursor.line + 1)
             @win1b.clear
+            set_dirty
           end
         else
           lines[@cursor.line].slice!(@cursor.x)
+          @win1b.clear
+          set_dirty
         end
-        win1b.clear
 
       when Curses::KEY_BACKSPACE
 
@@ -440,9 +482,12 @@ class Rodo
           lines[@cursor.line] += lines[@cursor.line + 1]
           lines.delete_at(@cursor.line + 1)
           @win1b.clear
+          set_dirty
         elsif @cursor.x > 0
           lines[@cursor.line].slice!(@cursor.x - 1)
           @cursor.x -= 1
+          @win1b.clear
+          set_dirty
         end
 
       when "\v" # CTRL K
@@ -453,6 +498,7 @@ class Rodo
           lines[0] = "".dup
         end
         @win1b.clear
+        set_dirty
 
       when ENTER, ENTER.chr
 
@@ -492,6 +538,8 @@ class Rodo
           lines.insert(@cursor.line + 1, right)
           @cursor.line += 1
         end
+        set_dirty
+
       when ESC, ESC.chr
 
         @mode = :scroll
@@ -501,11 +549,13 @@ class Rodo
 
         lines[@cursor.line].insert(@cursor.x, char)
         @cursor.x += 1
+        set_dirty
 
       when "\t", "\t".ord
         if lines[@cursor.line] =~ /\s*[-+*]/
           lines[@cursor.line].sub!(/^/, "  ")
           @cursor.x += 2
+          set_dirty
         end
 
       when Curses::KEY_BTAB
@@ -513,6 +563,7 @@ class Rodo
           lines[@cursor.line].sub!(/^(  |\t)/, "")
           @cursor.x -= 2
           @cursor.x = 0 if @cursor.x < 0
+          set_dirty
         end
 
       else
@@ -527,7 +578,7 @@ class Rodo
       case char
 
       when CTRLC, CTRLC.chr
-        return :close
+        return close_without_save
 
       when "\u0001" # CTRL+A
 
@@ -563,12 +614,14 @@ class Rodo
 
         if @cursor.x < lines[@cursor.line].size
           lines[@cursor.line].slice!(@cursor.x)
+          set_dirty
         end
 
       when Curses::KEY_BACKSPACE
         if @cursor.x > 0
           lines[@cursor.line].slice!(@cursor.x - 1)
           @cursor.x -= 1
+          set_dirty
         end
 
       when ENTER, ENTER.chr
@@ -582,6 +635,7 @@ class Rodo
           lines.delete_at(@cursor.line)
           @cursor.line -= 1 if @cursor.line >= lines.size
           @win1b.clear
+          set_dirty
         end
         # Debug:
         # Curses.debug "Lines[@cursor.line] == #{lines[@cursor.line].inspect }, @newly_added_line == #{@newly_added_line.inspect}"
@@ -600,6 +654,7 @@ class Rodo
         if lines[@cursor.line] =~ /\s*[-+*]/
           lines[@cursor.line].sub!(/^/, "  ")
           @cursor.x += 2
+          set_dirty
         end
 
       when Curses::KEY_BTAB
@@ -607,6 +662,7 @@ class Rodo
           lines[@cursor.line].sub!(/^(  |\t)/, "")
           @cursor.x -= 2
           @cursor.x = 0 if @cursor.x < 0
+          set_dirty
         end
 
       else
@@ -623,7 +679,7 @@ class Rodo
           return self.save
 
         when CTRLC, CTRLC.chr
-          return :close
+          return close_without_save
 
         when '~'
           @debug = !@debug
@@ -646,6 +702,7 @@ class Rodo
         when "\t", "\t".ord
           if lines[@cursor.line] =~ /\s*[-+*]/
             lines[@cursor.line].sub!(/^/, "  ")
+            set_dirty
           end
 
         when Curses::KEY_F1
@@ -693,14 +750,17 @@ class Rodo
         when Curses::KEY_BTAB
           if lines[@cursor.line] =~ /(  |\t)\s*[-+*]/
             lines[@cursor.line].sub!(/^(  |\t)/, "")
+            set_dirty
           end
 
         #when ENTER then buffer.new_line
         when '.', 'x'
           if lines[@cursor.line] =~ /\[\s\]/
             lines[@cursor.line].gsub!(/\[\s\]/, "[x]")
+            set_dirty
           elsif lines[@cursor.line] =~ /\[[xX]\]/
             lines[@cursor.line].gsub!(/\[[xX]\]/, "[ ]")
+            set_dirty
           end
         #when /[[:print:]]/ then buffer.add_char(char)
 
@@ -721,6 +781,7 @@ class Rodo
               star = ""
             end
             lines[@cursor.line] = lead + option + star + rest
+            set_dirty
           end
 
         when 'e', Curses::KEY_F2 # Edit
@@ -736,6 +797,7 @@ class Rodo
           lines.insert(@cursor.line, @newly_added_line.dup)
           @mode = :edit
           @cursor.x = lines[@cursor.line].size
+          set_dirty
 
         when ENTER, ENTER.chr
           @mode = :edit
@@ -748,12 +810,14 @@ class Rodo
           lines.insert(@cursor.line, @newly_added_line.dup)
           @mode = :edit
           @cursor.x = lines[@cursor.line].size
+          set_dirty
 
         when 't' # t(oday)
 
           @cursor.day = @journal.close(current_day)
           @current_day = @journal.days[@cursor.day]
           @win1b.clear
+          set_dirty
 
         when 'k' # kill
           if lines.size > 1
@@ -763,6 +827,7 @@ class Rodo
             lines[0] = "".dup
           end
           @win1b.clear
+          set_dirty
 
         when 'w' # waiting
 
@@ -783,12 +848,14 @@ class Rodo
 
             # Add hourclass here
             lines[@cursor.line].gsub!(/\[\s\]/, "[⌛]")
+            set_dirty
 
           end
 
         when 'p' # postpone
 
           postpone(lines, current_day, 1)
+          set_dirty
 
         else
           if Curses.debug_win
@@ -804,13 +871,14 @@ class Rodo
           return self.save
 
         when CTRLC, CTRLC.chr
-          return :close
+          return close_without_save
 
         when Curses::KEY_UP
 
           if @cursor.line > 0
             lines[@cursor.line], lines[@cursor.line - 1] = lines[@cursor.line - 1], lines[@cursor.line]
             @cursor.line -= 1
+            set_dirty
           end
 
         when Curses::KEY_DOWN
@@ -818,16 +886,19 @@ class Rodo
           if @cursor.line < lines.size - 1
             lines[@cursor.line], lines[@cursor.line + 1] = lines[@cursor.line + 1], lines[@cursor.line]
             @cursor.line += 1
+            set_dirty
           end
 
         when "\t", "\t".ord, Curses::KEY_RIGHT
           if lines[@cursor.line] =~ /\s*[-+*]/
             lines[@cursor.line].sub!(/^/, "  ")
+            set_dirty
           end
 
         when Curses::KEY_BTAB, Curses::KEY_LEFT
           if lines[@cursor.line] =~ /(  |\t)\s*[-+*]/
             lines[@cursor.line].sub!(/^(  |\t)/, "")
+            set_dirty
           end
 
         when ENTER, ENTER.chr, ESC, ESC.chr

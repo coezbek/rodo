@@ -10,8 +10,7 @@ Todos for Rodo 0.2.0
  - [-] Lock plan.md while being open in Rodo => Seems not common to do this under Linux
  - [ ] Short intro video
  - [ ] When closing days, use a checkmark to mark the day as done
- - [ ] Multiline/wrap support
- - [ ] Autosave
+ - [x] Autosave into a ~ file and offer recovery
  - [ ] Add migration mode
  - [ ] Monthly Log Mode
  - [ ] Copy and Paste from <ul>/<ol> and OneNote
