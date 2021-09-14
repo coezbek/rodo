@@ -56,6 +56,17 @@ module Curses
       end
     end
 
+    def puts_center(string)
+
+      overflows = string.length / self.maxx
+      x = [0, (self.maxx - string.length) / 2].max
+      y = [0, (self.maxy - overflows - 1) / 2].max
+
+      setpos(y,x)
+      puts(string)
+
+    end
+
     # Return the current coordinates of the cursor [y,x]
     def getyx
       return [cury(), curx()]

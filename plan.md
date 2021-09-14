@@ -3,6 +3,7 @@
 Todos for Rodo 0.2.0
  - [x] Support for F2 to start editing (for the Excel fanatics)
  - [x] Add Star Toggle
+ - [x] Add Focus Mode (Press 1), which focuses a single task
  - [ ] Better dirty region handling during normal typing
  - [x] Fix: deleting lines with backspace doesn't update dirty region
  - [ ] Print short message when exiting that files are saved

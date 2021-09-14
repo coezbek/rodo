@@ -223,47 +223,56 @@ class Rodo
     @win1b.setpos(0, @win1b.maxx - nav_str.length - 1)
     @win1b.addstr(nav_str)
 
-    # Contents of current day:
-    lines = current_day.lines
-    overflows = 0
-    lines.each_with_index do |line, i|
-      Curses.abort("Line #{i} is nil") if line == nil
+    if @mode == :focus
 
-      @win1b.setpos(i + overflows + 1, 0)
-      if @cursor.line == i
-        @win1b.attron(Curses.color_pair(255))
-      else
-        @win1b.attron(Curses.color_pair(246))
-      end
-      if (%i[scroll move].include?(@mode) && (@cursor.line != i || line.size != 0)) ||
-         (%i[edit journalling].include?(@mode) && @cursor.line != i)
-      then
-         @win1b.puts line
-      else
-        line = line + " "
+      line = current_day.lines[@cursor.line]
 
-        if Curses.debug_win
-          Curses.debug_win.puts "Before Cursor: '#{line[...@cursor.x]}'"
-          Curses.debug_win.puts "Cursor_x: '#{@cursor.x}'"
-          Curses.debug_win.refresh
+      @win1b.puts_center(line)
+
+    else
+
+      # Contents of current day:
+      lines = current_day.lines
+      overflows = 0
+      lines.each_with_index do |line, i|
+        Curses.abort("Line #{i} is nil") if line == nil
+
+        @win1b.setpos(i + overflows + 1, 0)
+        if @cursor.line == i
+          @win1b.attron(Curses.color_pair(255))
+        else
+          @win1b.attron(Curses.color_pair(246))
+        end
+        if (%i[scroll move focus].include?(@mode) && (@cursor.line != i || line.size != 0)) ||
+          (%i[edit journalling].include?(@mode) && @cursor.line != i)
+        then
+          @win1b.puts line
+        else
+          line = line + " "
+
+          if Curses.debug_win
+            Curses.debug_win.puts "Before Cursor: '#{line[...@cursor.x]}'"
+            Curses.debug_win.puts "Cursor_x: '#{@cursor.x}'"
+            Curses.debug_win.refresh
+          end
+
+          @cursor.x = 0 if ![:edit, :journalling].include?(@mode)
+          @cursor.x = line.size - 1 if @cursor.x >= line.size
+
+          @win1b.addstr line[...@cursor.x] if @cursor.x > 0
+          @win1b.attron(Curses::A_REVERSE)
+          @win1b.addstr line[@cursor.x]
+          @win1b.attroff(Curses::A_REVERSE)
+          @win1b.addstr(line[(@cursor.x+1)..]) if @cursor.x < line.size
+          @win1b.addstr("\n")
         end
 
-        @cursor.x = 0 if ![:edit, :journalling].include?(@mode)
-        @cursor.x = line.size - 1 if @cursor.x >= line.size
-
-        @win1b.addstr line[...@cursor.x] if @cursor.x > 0
-        @win1b.attron(Curses::A_REVERSE)
-        @win1b.addstr line[@cursor.x]
-        @win1b.attroff(Curses::A_REVERSE)
-        @win1b.addstr(line[(@cursor.x+1)..]) if @cursor.x < line.size
-        @win1b.addstr("\n")
+        overflows += line.length / @win1b.maxx
       end
 
-      overflows += line.length / @win1b.maxx
+      # At the end switch color to normal again
+      @win1b.attron(Curses.color_pair(246))
     end
-
-    # At the end switch color to normal again
-    @win1b.attron(Curses.color_pair(246))
   end
 
   def process_paste(pasted)
@@ -325,6 +334,20 @@ class Rodo
     lines = current_day.lines
 
     case @mode
+
+    when :focus
+
+      case char
+      when '.', 'x', ' '
+        if lines[@cursor.line] =~ /\[\s\]/
+          lines[@cursor.line].gsub!(/\[\s\]/, "[x]")
+        elsif lines[@cursor.line] =~ /\[[xX]\]/
+          lines[@cursor.line].gsub!(/\[[xX]\]/, "[ ]")
+        end
+      else
+        @mode = :scroll
+        @win1b.clear
+      end
 
     when :journalling
 
@@ -681,6 +704,12 @@ class Rodo
           end
         #when /[[:print:]]/ then buffer.add_char(char)
 
+        # Focus mode
+        when '1'
+          @mode = :focus
+          @win1b.clear
+
+        # Star Toggle # ★
         when '2'
 
           # If line to the left of cursor starts with "- [ ]" or with a star or dash
