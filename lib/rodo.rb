@@ -144,14 +144,18 @@ class Rodo
     create_bak
 
     to_write = @journal.to_s
-    File.write(@file_name, to_write)
+    if File.read(@file_name) != to_write
+      File.write(@file_name, to_write)
+    end
 
-    if File.read(@file_name) == to_write
-      File.delete(backup_file_name)
-    else
-      # Saving failed
-      # Make sure the backup file has a more recent modification date
-      FileUtils.touch(backup_file_name)
+    if File.exists?(backup_file_name)
+      if File.read(@file_name) == to_write
+        File.delete(backup_file_name)
+      else
+        # Saving failed
+        # Make sure the backup file has a more recent modification date
+        FileUtils.touch(backup_file_name)
+      end
     end
 
     return :close
