@@ -36,7 +36,8 @@ Rodo comes with no warranty and is still rough. The most notable things missing 
  - No autosave
  - No scrolling
  - No mouse interaction
- - No special handling for any markdown except unordered lists, headings and todos.
+ - No special handling for any markdown except unordered lists, headings and todos
+ - No file locking for exclusive read/write (won't change)
 
 ## Installation & First Run
 
@@ -95,3 +96,11 @@ Rodo is licensed under GPL-v3 or later.
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/coezbek/rodo.
+
+## Related Work
+
+Todo trackers seem to scratch an itch for many. Notable related work from which Rodo draws inspiration:
+
+- http://todotxt.org/ - Even more bare-bone text-based file format for todo tracking. Lots of tools supporting it.
+- https://bulletjournal.com/ - Paper-based journalling methodology.
+- https://orgmode.org/ - If you want to bring emacs into the game.
