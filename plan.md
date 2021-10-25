@@ -8,6 +8,7 @@ Todos for Rodo 0.2.0
  - [x] Fix: deleting lines with backspace doesn't update dirty region
  - [ ] Print short message when exiting that files are saved
  - [-] Lock plan.md while being open in Rodo => Seems not common to do this under Linux
+ - [x] Add shortcut '-' to toggle a todo to [-] which indicates it is canceled
  - [ ] Short intro video
  - [ ] When closing days, use a checkmark to mark the day as done
  - [x] Autosave into a ~ file and offer recovery

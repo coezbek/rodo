@@ -385,8 +385,19 @@ class Rodo
       when '.', 'x', ' '
         if lines[@cursor.line] =~ /\[\s\]/
           lines[@cursor.line].gsub!(/\[\s\]/, "[x]")
+          set_dirty
         elsif lines[@cursor.line] =~ /\[[xX]\]/
           lines[@cursor.line].gsub!(/\[[xX]\]/, "[ ]")
+          set_dirty
+        end
+
+      when '-'
+        if lines[@cursor.line] =~ /\[\s\]/
+          lines[@cursor.line].gsub!(/\[\s\]/, "[-]")
+          set_dirty
+        elsif lines[@cursor.line] =~ /\[-\]/
+          lines[@cursor.line].gsub!(/\[-\]/, "[ ]")
+          set_dirty
         end
       else
         @mode = :scroll
@@ -764,6 +775,15 @@ class Rodo
             set_dirty
           elsif lines[@cursor.line] =~ /\[[xX]\]/
             lines[@cursor.line].gsub!(/\[[xX]\]/, "[ ]")
+            set_dirty
+          end
+
+        when '-'
+          if lines[@cursor.line] =~ /\[\s\]/
+            lines[@cursor.line].gsub!(/\[\s\]/, "[-]")
+            set_dirty
+          elsif lines[@cursor.line] =~ /\[-\]/
+            lines[@cursor.line].gsub!(/\[-\]/, "[ ]")
             set_dirty
           end
         #when /[[:print:]]/ then buffer.add_char(char)
