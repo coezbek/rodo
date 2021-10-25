@@ -9,7 +9,7 @@ module Commands
         prototype: "p ",
         do_cmd: lambda { |cmd, lines, day|
           if cmd =~ /^p\s*(\d*)\s*$/
-            postpone(lines, day, $1.to_i)
+            postpone(lines, day, $1.to_i, '>')
           end
         }
       },

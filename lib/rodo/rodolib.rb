@@ -82,11 +82,16 @@ class Journal
     return ensure_day(target_date)
   end
 
-  # Postpone the given line on the given day by the given number of days, default=1
+  # Move/postpone the given line on the given day by the given number of days into the future (defaults to 1 day)
+  #
+  # Will replace the todo character by the given postpone_char (defaults to '>')
+  #
+  # If a block is given the line on the given day/line_index is yielded and the returned
+  # string is inserted into the future day.
   #
   # Returns false, if there is no todo which can be postponed on the given line
   # Returns the target date to which the line was moved if successful.
-  def postpone_line(day, line_index, number_of_days_to_postpone=1)
+  def postpone_line(day, line_index, number_of_days_to_postpone=1, postpone_char='>')
 
     line = day.lines[line_index]
 
@@ -103,7 +108,7 @@ class Journal
     unfinished_lines = [nil] * day.lines.size
 
     # Copy all unfinished tasks and...
-    unfinished_lines[line_index] = line.dup
+    unfinished_lines[line_index] = block_given? ? yield(line.dup) : line.dup
 
     # ...their parent entries (recursively)
     parent_index = line_index
@@ -122,7 +127,7 @@ class Journal
     # TODO
 
     # Mark line itself as postponed
-    line.sub!(/\[\s\]/, "[>]")
+    line.sub!(/\[\s\]/, "[#{postpone_char}]")
 
     # Get rid of primary header
     if unfinished_lines[0] =~ /^\s*\#\s*(\d\d\d\d-\d\d-\d\d)/

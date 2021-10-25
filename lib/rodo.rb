@@ -855,31 +855,39 @@ class Rodo
 
         when 'w' # waiting
 
-          if lines[@cursor.line] =~ /\[\s\]/
+          postpone(lines, current_day, 7, '⌛') { |line|
 
-            line_to_wait_for = lines[@cursor.line].dup
-
-            if !(line_to_wait_for =~ / - ⌛ since \d\d\d\d-\d\d-\d\d$/) && current_day.date
-              line_to_wait_for = line_to_wait_for.rstrip + " - ⌛ since #{current_day.date_name}"
+            if !(line =~ / - ⌛ since \d\d\d\d-\d\d-\d\d$/) && current_day.date
+              line = line.rstrip + " - ⌛ since #{current_day.date_name}"
             end
 
-            # Get target day (and create if it doesn't exist) and add there
-            postpone_day = @journal.postpone_day(current_day, 7)
-            postpone_day.lines.insert(1, line_to_wait_for)
+            next line
+          }
 
-            # Adjust @cursor.day if a new day was created
-            @cursor.day += 1 if current_day != @journal.days[@cursor.day]
+          # if lines[@cursor.line] =~ /\[\s\]/
 
-            # Add hourclass here
-            lines[@cursor.line].gsub!(/\[\s\]/, "[⌛]")
-            set_dirty
+          #   line_to_wait_for = lines[@cursor.line].dup
 
-          end
+          #   if !(line_to_wait_for =~ / - ⌛ since \d\d\d\d-\d\d-\d\d$/) && current_day.date
+          #     line_to_wait_for = line_to_wait_for.rstrip + " - ⌛ since #{current_day.date_name}"
+          #   end
+
+          #   # Get target day (and create if it doesn't exist) and add there
+          #   postpone_day = @journal.postpone_day(current_day, 7)
+          #   postpone_day.lines.insert(1, line_to_wait_for)
+
+          #   # Adjust @cursor.day if a new day was created
+          #   @cursor.day += 1 if current_day != @journal.days[@cursor.day]
+
+          #   # Add hourclass here
+          #   lines[@cursor.line].gsub!(/\[\s\]/, "[⌛]")
+          #   set_dirty
+
+          # end
 
         when 'p' # postpone
 
-          postpone(lines, current_day, 1)
-          set_dirty
+          postpone(lines, current_day, 1, '>')
 
         else
           if Curses.debug_win
@@ -938,12 +946,15 @@ class Rodo
     return nil
   end
 
-  def postpone(lines, current_day, n)
+  def postpone(lines, current_day, n, postpone_char, &block)
 
-    target_day = @journal.postpone_line(current_day, @cursor.line, n)
+    target_day = @journal.postpone_line(current_day, @cursor.line, n, postpone_char, &block)
+    return false unless target_day
 
     # Adjust @cursor.day if a new day was created
     @cursor.day += 1 if current_day != @journal.days[@cursor.day]
+
+    set_dirty
   end
 
 end

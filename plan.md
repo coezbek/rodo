@@ -6,6 +6,7 @@ Todos for Rodo 0.2.0
  - [x] Add Focus Mode (Press 1), which focuses a single task
  - [ ] Better dirty region handling during normal typing
  - [x] Fix: deleting lines with backspace doesn't update dirty region
+ - [x] When 'w'aiting a message also copy relevant structure
  - [ ] Print short message when exiting that files are saved
  - [-] Lock plan.md while being open in Rodo => Seems not common to do this under Linux
  - [x] Add shortcut '-' to toggle a todo to [-] which indicates it is canceled
