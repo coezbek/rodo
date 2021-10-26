@@ -804,7 +804,7 @@ class Rodo
             else
               star = ""
             end
-            lines[@cursor.line] = lead + option + star + rest
+            lines[@cursor.line] = [lead, option, star, rest].join('')
             set_dirty
           end
 
