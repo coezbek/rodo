@@ -67,8 +67,8 @@ By default rodo is in `scroll` mode, with the following keys supported:
  - <kbd>Q</kbd> Quit with Save
  - <kbd>CTRL+C</kbd> Quit without Save
  - <kbd>A</kbd> Append new todo below with same indent as current line
- - <kbd>I</kbd> Insert new todo before the current lien with same indent as current line
- - <kbd>K</kbd> Kill current line
+ - <kbd>I</kbd> Insert new todo before the current line with same indent as current line
+ - <kbd>K</kbd> Kill (delete) current line
  - <kbd>P</kbd> Postpone current line to tomorrow
  - <kbd>W</kbd> Mark current todo as waiting for reply/other person (put a reminder in 7 days)
  - <kbd>T</kbd> Create a new entry for today's date and move all unfinished todos over. This will also copy all top level entries (section headers), even if they are empy.
