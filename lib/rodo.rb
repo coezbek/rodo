@@ -174,14 +174,16 @@ class Rodo
       Curses.debug_win = nil
     end
 
+    cols = Curses.cols / (1 + (@debug ? 1 : 0))
+
     # Building a static window
-    @win1 = Curses::Window.new(Curses.lines, Curses.cols / (@debug ? 2 : 1), 0, 0)
+    @win1 = Curses::Window.new(Curses.lines, cols, 0, 0)
     @win1.keypad = true
     @win1.timeout = BACKUP_INACTIVITY_INTERVAL_SECONDS * 1000 # Use 15s inactivity as an indicator for saving automatically
     @win1b = @win1.subwin(@win1.maxy - 2, @win1.maxx - 3, 1, 2)
 
     if @debug
-      debug_win = Curses::Window.new(Curses.lines, Curses.cols / 2, 0, Curses.cols / 2)
+      debug_win = Curses::Window.new(Curses.lines, Curses.cols - cols, 0, cols)
       debug_win.box
       debug_win.caption "Debug information"
       debug_win.refresh
