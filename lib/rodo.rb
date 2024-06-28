@@ -148,7 +148,7 @@ class Rodo
       File.write(@file_name, to_write)
     end
 
-    if File.exists?(backup_file_name)
+    if File.exist?(backup_file_name)
       if File.read(@file_name) == to_write
         File.delete(backup_file_name)
       else

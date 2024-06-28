@@ -29,7 +29,7 @@ class Rodo
 
   def check_for_stale_backup_and_recover
 
-    if File.exists?(backup_file_name) && File.mtime(backup_file_name) > File.mtime(@file_name)
+    if File.exist?(backup_file_name) && File.mtime(backup_file_name) > File.mtime(@file_name)
 
       size_orig = File.size(@file_name).to_s
       size_back = File.size(backup_file_name).to_s
