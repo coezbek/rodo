@@ -16,11 +16,13 @@ Todos for Rodo 0.2.0
  - [ ] Add migration mode
  - [ ] Monthly Log Mode
  - [ ] Copy and Paste from <ul>/<ol> and OneNote
+ - [ ] Find a Clipboard Gem which handles HTML
  - [ ] Improve command palette with support for cursor keys
  - [ ] CTRL+Backspace for delete word
 
 Todos for Rodo 0.3.0
  - [ ] Multiview
+ - [ ] Multiline/wrap support
 
 # 2021-06-09
 
@@ -88,7 +90,7 @@ Todos for Rodo 0.2.0 and later
 
 Todos until Rodo 0.1.0
  - [>] When closing merge text with existing days
- - [x] Only start debug window when run with ruby $DEBUG
+ - [x] Only start debug window when run with ruby $DEBUG (ruby -d)
  - [x] Use Shift+~ to Toogle Debug Console
  - [x] Copy and Paste with Bracketed Paste mode and some basic clean-ups (tabs)
  - [x] CTRL+Cursor Keys should navigate in text line
