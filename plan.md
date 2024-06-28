@@ -8,14 +8,13 @@ Todos for Rodo 0.2.0
  - [x] Fix: deleting lines with backspace doesn't update dirty region
  - [x] When 'w'aiting a message also copy relevant structure
  - [ ] Print short message when exiting that files are saved
- - [-] Lock plan.md while being open in Rodo => Seems not common to do this under Linux
- - [x] Add shortcut '-' to toggle a todo to [-] which indicates it is canceled
+ - [x] Add shortcut `'-'` to toggle a todo to `[-]` which indicates it is canceled
  - [ ] Short intro video
  - [ ] When closing days, use a checkmark to mark the day as done
  - [x] Autosave into a ~ file and offer recovery
  - [ ] Add migration mode
  - [ ] Monthly Log Mode
- - [ ] Copy and Paste from <ul>/<ol> and OneNote
+ - [ ] Copy and Paste from `<ul>/<ol>` and OneNote
  - [ ] Find a Clipboard Gem which handles HTML
  - [ ] Improve command palette with support for cursor keys
  - [ ] CTRL+Backspace for delete word
@@ -47,7 +46,7 @@ Todos for Rodo 0.2.0 and later
  - [>] Autosave
  - [>] Add migration mode
  - [>] Montly Log Mode
- - [>] Copy and Paste from <ul>/<ol> and OneNote
+ - [>] Copy and Paste from `<ul>/<ol>` and OneNote
  - [>] Improve command palette with support for cursor keys
 
 # 2021-06-02
@@ -66,7 +65,7 @@ Todos for Rodo 0.2.0 and later
  - [>] Autosave
  - [>] Add migration mode
  - [>] Montly Log Mode
- - [>] Copy and Paste from <ul>/<ol> and OneNote
+ - [>] Copy and Paste from `<ul>/<ol>` and OneNote
  - [>] Improve command palette with support for cursor keys
 
 # 2021-05-30 Sun
@@ -83,7 +82,7 @@ Todos for Rodo 0.2.0 and later
  - [>] Autosave
  - [>] Add migration mode
  - [>] Montly Log Mode
- - [>] Copy and Paste from <ul>/<ol> and OneNote
+ - [>] Copy and Paste from `<ul>/<ol>` and OneNote
  - [>] Improve command palette with support for cursor keys
 
 # 2021-05-27 Thu
@@ -102,7 +101,7 @@ Todos for Rodo 0.2.0 and later
  - [>] Autosave
  - [>] Add migration mode
  - [>] Montly Log Mode
- - [>] Copy and Paste from <ul>/<ol> and OneNote
+ - [>] Copy and Paste from `<ul>/<ol>` and OneNote
  - [>] Improve command palette with support for cursor keys
 
 # 2021-05-26 Wed
@@ -125,7 +124,7 @@ Todos for Rodo 0.2.0 and later
  - [>] Autosave
  - [>] Add migration mode
  - [>] Montly Log Mode
- - [>] Copy and Paste from <ul>/<ol> and OneNote
+ - [>] Copy and Paste from `<ul>/<ol>` and OneNote
 
 # 2021-05-25
  - [>] Add command area
