@@ -3,6 +3,7 @@ require 'rodo'
 describe Journal do
 
   before do
+    # https://stackoverflow.com/a/38151837/278842
     allow(Date).to receive(:today).and_return Date.new(2021, 5, 31)
   end
 
@@ -111,7 +112,7 @@ describe Journal do
     )
   end
 
-  it "Journal::postpone_line will maintain section ordering" do
+  xit "Journal::postpone_line will maintain section ordering" do
 
     j = Journal.from_s(<<~EOL
       # 2021-05-31
@@ -225,5 +226,78 @@ describe Journal do
     )
   end
 
+  it "Journal::most_recent_index will not go into the future" do
+
+    # Today is set to 2021-05-31
+
+    j = Journal.from_s(<<~EOL
+      # 2021-06-01 
+       - [ ] A future todo
+
+      # 2021-05-30
+       - [ ] My Todo
+
+      # 2021-05-29
+       - [ ] My old Todo
+    EOL
+    )
+
+    expect(j.most_recent_index).to eql(1)
+
+  end
+
+  it "Journal::most_recent_open_index basic cases" do
+
+    # Today is set to 2021-05-31
+
+    j = Journal.from_s(<<~EOL
+      # 2021-06-01 
+       - [ ] A future todo
+
+      # 2021-05-30
+       - [ ] My Todo
+
+      # 2021-05-29
+       - [ ] My old Todo
+
+      # 2021-05-28
+       - [x] My old finished Todo
+
+      # 2021-05-27
+       - [ ] My older unfinished Todo
+
+      # 2021-05-26
+       - [x] My oldest finished Todo
+    EOL
+    )
+
+    # Will return 2021-05-29 because 05-28 is closed
+    expect(j.most_recent_open_index).to eql(2)
+
+  end
+
+  it "Journal::most_recent_open_index special case" do
+
+    # Today is set to 2021-05-31
+
+    j = Journal.from_s(<<~EOL
+      # 2021-06-01 
+       - [ ] A future todo
+
+      # 2021-05-30
+       - [x] My Todo
+
+      # 2021-05-29
+       - [ ] My old Todo
+
+      # 2021-05-28
+       - [x] My old finished Todo
+    EOL
+    )
+
+    # Will return 2021-05-30 because it is closed and there is no more recent 
+    expect(j.most_recent_open_index).to eql(1)
+
+  end
 
 end

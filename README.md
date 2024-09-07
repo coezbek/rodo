@@ -28,6 +28,78 @@ Rodo is work in progress but can already be used for basic todo tracking. Curren
 - Bracketed paste support allows to paste from the clipboard without seeing indentation artifacts.
 - Backup before save (stored to `_bak\`)
 
+## Recurring Todos
+
+Rodo has support for recurring todos, which you want to show up daily, weekly, monthly or yearly. 
+
+To define recurring tasks put a recurring.md file in the same directory as your plan.md. The format is as follows:
+
+```
+# Yearly
+Name of the section to put the todo into:
+- [ ] Do something
+
+Birthdays:
+- 13.01. [ ] Christopher
+- 7/27 [ ] John
+
+# Monthly
+- 25. [ ] Pay rent
+...
+
+# Weekly
+- Friday [ ] Submit timesheet 
+...
+
+# Daily
+...
+```
+
+The recurring todos will be copied over to the current day when you press `T` (today) and a new year, month, week or day has begun.
+
+By default Rodo assumes that a new year starts on January 1st, a new month on the first of the month and a new week on Monday. You can adjust the day that the event is triggered by prepending information before the `[ ]`. Supported formats are:
+
+ - For yearly events:
+   - `DD.MM.` or `MM/DD` Event will trigger on the given day+month.
+ - For monthly events:
+   - `DD.` or `DD` Event will trigger on the given day of the month.
+ - For weekly events:
+   - `Weekday` (e.g. `Monday` or `Mo` or `Mon`) Event will trigger on the given weekday.
+ - For all events:
+   - `YYYYMMDD` or `DD.MM.YYYY` or `MM/DD/YYYY` Event will trigger based on the given date as the starting date. 
+
+For more complex recurring events, alternatively to the above shorthand formats, you can use the iCalender RRULE syntax. For example, to create a recurring event every 2 weeks on Monday and Thursdays, you can use the following syntax:
+
+```
+# Weekly
+- FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,TH [ ] Submit timesheet 
+```
+
+You can omit the `FREQ=WEEKLY` from the syntax, it is inferred from the section header.
+
+You can prepend `DTSTART=YYYYMMDD;` or `DTSTART:YYYYMMDD;` to the RRULE to specify a start date for the recurring event. Caution: This is just parsed as YYYYMMDD and does not support any other date formats.
+
+### Limit of tasks 
+
+For daily todos, Rodo will by default at most create a single todo even if some days have passed while you last used Rodo. For example if you have defined a daily todo of " - [ ] Exercise 15 minutes", and you haven't used Rodo for two days, then only a single todo will be created. For yearly, monthly and weekly todos, Rodo will not skip over todos, but add all past todos. You can adjust this behavior by adding 'LIMIT=n' where 0 indicates no limit in batching and other integers indicate the maximum number of todos which are created in a single `t` (today) command.
+
+### Expansion of placeholders
+
+Rodo supports the following placeholders in the recurring todos:
+
+ - `%quarter%` - Returns the quarter of the current month (1-4)
+ - `%recurrence%` - Returns the number of times since the DTSTART that this task was created (or better could have been created) (also `%age%`)
+ - `%recurrenceth%` - Same as %recurrence% but in ordinal form (1st, 2nd, 3rd, ...)
+ - All others such as `%Y%`, `%b%` as in [https://ruby-doc.org/stdlib-2.6.1/libdoc/date/rdoc/DateTime.html#method-i-strftime](strftime)
+
+### Examples
+
+On the 1st of January, 1st of April, etc. the following todo will be created:
+```
+# Monthly
+- INTERVAL=3 [ ] Send quarterly investor report for Q%quarter% %Y% 
+```
+
 ## Things not working currently
 
 Rodo comes with no warranty and is still rough. The most notable things missing in the release 0.1.0:
@@ -38,6 +110,15 @@ Rodo comes with no warranty and is still rough. The most notable things missing 
  - No mouse interaction
  - No special handling for any markdown except unordered lists, headings and todos
  - No file locking for exclusive read/write (won't change)
+
+## Command line options
+
+Rodo supports the following command line options:
+
+ - `-d` - Enable debug mode. This will show the debug info in a separate ncurses window.
+ - `-f` - Enable the future todo window.
+ - `-r=YYYYMMDD` - Output the todos for the given date including recurring tasks
+
 
 ## Installation & First Run
 

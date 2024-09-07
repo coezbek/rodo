@@ -22,6 +22,16 @@ module Curses
     end
   end
 
+  @@future_win = nil
+
+  def self.future_win= win
+    @@future_win = win
+  end
+
+  def self.future_win
+    @@future_win
+  end
+
   # Switch on bracketed paste mode
   # and reset it at end of application
   def self.bracketed_paste

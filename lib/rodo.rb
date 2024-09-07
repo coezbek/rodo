@@ -44,6 +44,30 @@ class Rodo
   attr_accessor :debug
 
   def process_args
+
+    @debug = false
+    @future = false
+    @simulate = nil
+
+    # Process ARGS:
+    #   -d = Debug
+    #   -f = Show Future Window
+    #   -r=YYYYMMDD = Simulate Recurring Tasks for the given date and exit
+    while ARGV[0] =~ /^-+(\w)(.*)$/
+      case $1
+      when "d"
+        @debug = true
+      when "f"
+        @future = true
+      when "r"
+        # Simulate Recurring Tasks: "-r=YYYYMMDD" will set the current day to the given date and return the result of closing the last day
+        @simulate = $2.split("=")[1]
+      else
+        Curses.abort("Unknown option: #{$1}")
+      end
+      ARGV.shift
+    end
+
     # If no file is given, assume the user wants to edit "~/plan.md"
     if ARGV.empty?
       @file_name = "plan.md"
@@ -56,6 +80,24 @@ class Rodo
   end
 
   def init
+
+    # If file does not exist
+    File.write(@file_name, "# #{Time.now.strftime("%Y-%m-%d")}\n") if !File.exist?(@file_name)
+
+    @journal = Journal.from_s(File.read(@file_name))
+
+    @rec_file_name = "recurrence.md"
+    @journal.recurrences = Recurrences.from_s(File.read(@rec_file_name)) if File.exist?(@rec_file_name)
+
+    if @simulate
+      require 'timecop'
+      Timecop.freeze(Time.parse(@simulate)) do 
+        newDay = @journal.close(@journal.days[@journal.most_recent_open_index])
+        puts @journal.days[newDay].to_s
+        exit(0)        
+      end      
+    end
+    
     Curses.ESCDELAY = 50        # 50 milliseconds (ESC is always a key, never a sequence until automatic)
     Curses.raw
     Curses.noecho               # Don't print user input
@@ -74,16 +116,12 @@ class Rodo
       }
     end
 
-    # If file does not exist
-    File.write(@file_name, "# #{Time.now.strftime("%Y-%m-%d")}\n") if !File.exist?(@file_name)
-
-    @journal = Journal.from_s(File.read(@file_name))
-
     @cursor = Cursor.new(@journal)
-    @cursor.day = @journal.most_recent_index
+    @cursor.day = @journal.most_recent_open_index
     @mode = :scroll
     @newly_added_line = nil
-    @debug = $DEBUG || $VERBOSE # || ENV["BUNDLE_BIN_PATH"]
+    
+    @debug = @debug || $DEBUG || $VERBOSE # || ENV["BUNDLE_BIN_PATH"]
   end
 
   def main_loop
@@ -175,16 +213,29 @@ class Rodo
       Curses.debug_win = nil
     end
 
-    cols = Curses.cols / (1 + (@debug ? 1 : 0))
+    cols = Curses.cols / (1 + (@debug ? 1 : 0) + (@future ? 1 : 0))
+    cur_col = 0
 
     # Building a static window
-    @win1 = Curses::Window.new(Curses.lines, cols, 0, 0)
+    @win1 = Curses::Window.new(Curses.lines, cols, 0, cur_col)
     @win1.keypad = true
     @win1.timeout = BACKUP_INACTIVITY_INTERVAL_SECONDS * 1000 # Use 15s inactivity as an indicator for saving automatically
     @win1b = @win1.subwin(@win1.maxy - 2, @win1.maxx - 3, 1, 2)
 
+    cur_col += cols
+
+    if @future
+      future_win = Curses::Window.new(Curses.lines, @debug ? cols : Curses.cols - cols, 0, cur_col)
+      future_win.box
+      future_win.caption "Upcoming todos"
+      future_win.refresh
+      Curses.future_win = future_win.inset
+
+      cur_col += cols
+    end
+
     if @debug
-      debug_win = Curses::Window.new(Curses.lines, Curses.cols - cols, 0, cols)
+      debug_win = Curses::Window.new(Curses.lines, Curses.cols - cur_col, 0, cur_col)
       debug_win.box
       debug_win.caption "Debug information"
       debug_win.refresh
@@ -732,6 +783,10 @@ class Rodo
 
         when '~'
           @debug = !@debug
+          build_windows
+
+        when '^'
+          @future = !@future
           build_windows
 
         when Curses::KEY_UP

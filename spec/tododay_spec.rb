@@ -1,9 +1,14 @@
 require 'rodo'
+require 'timecop'
 
 describe TodoDay do
 
   before do
-    allow(Date).to receive(:today).and_return Date.new(2021, 5, 31)
+    #allow(Date).to receive(:today).and_return Date.new(2021, 5, 31)
+    #now = Time.now
+    #allow(Time).to receive(:now).and_return Time.new(2021, 5, 31, now.hour, now.min, now.sec)    
+
+    Timecop.freeze(Time.local(2021, 5, 31))
   end
 
   it "TodoDay::merge basic case (single line)" do
@@ -358,4 +363,40 @@ describe TodoDay do
         },
         {:children=>[], :depth=>0, :index=>8, :text=>""}])
   end
+
+  it "TodoDay::is_any_open? and is_closed?" do
+
+    j = Journal.from_s(<<~EOL
+      # 2021-05-30
+       - [ ] Setup project schedule
+       - [x] Draft whitepaper
+
+      # 2021-05-29
+       - [ ] My old Todo
+
+      # 2021-05-28
+       - [x] Finished fodo
+       - [x] Start a todo list
+    EOL
+    )
+
+    expect(j.days[0].is_any_open?).to eql(true)
+    expect(j.days[1].is_any_open?).to eql(true)
+    expect(j.days[2].is_any_open?).to eql(false)
+
+    expect(j.days[0].is_closed?).to eql(false)
+    expect(j.days[1].is_closed?).to eql(false)
+    expect(j.days[2].is_closed?).to eql(true)
+  end
+
+  it "TodoDay::test strptime" do
+
+    puts Time.now
+
+    d = Date.strptime("27", "%d", now=Time.now)
+    
+    expect(d).to eql(Date.new(2021, 5, 27))
+
+  end
+
 end

@@ -34,11 +34,15 @@ end
 #
 class Journal
 
+  # Array of TodoDay objects in reverse chronological order (newest day first)!
   attr_accessor :days
+  attr_accessor :recurrences
+
   def self.from_s(s)
 
     j = Journal.new
     j.days = []
+    j.recurrences = nil
 
     next_day = []
     s.each_line { |line|
@@ -174,12 +178,21 @@ class Journal
     end
 
     target_day = ensure_day(Date.today)
+
+    recurring_tasks = []
+    
     if target_day == day
       # When closing on the same day: append hour and minutes
       newDate = "# #{Time.now.strftime("%Y-%m-%d %a %H:%M")}"
       target_day = TodoDay.new([newDate])
       insertion_index = days.index { |d| target_day.date >= d.date } || 0
       days.insert(insertion_index, target_day)
+    else
+      # When moving at least one day into the future determine recurring tasks
+      if recurrences != nil
+        recurring_tasks = recurrences.determine_recurring_tasks(day.date, target_day.date)  
+        # raise recurring_tasks.inspect
+      end
     end
 
     # Only append non-empty lines
@@ -187,12 +200,38 @@ class Journal
 
     target_day.merge_lines(unfinished_lines)
 
+    # Append recurring tasks
+    target_day.merge_lines(recurring_tasks.select { |l| l != nil })
+
     return days.find_index(target_day)
   end
 
+  #
+  # Returns the index of the day in the Journal which is most recent but not in the future
+  # If no such day exists, returns 0
+  # 
   def most_recent_index
     today = Date.today
     return days.find_index { |x| x.date <= today } || 0
+  end
+
+  #
+  # Returns the index of the TodoDay which comes after the most recent closed TodoDay
+  # 
+  def most_recent_open_index
+    today = Date.today
+    result = days.each_cons(2).find_index { |cur, prev|
+      # puts "cur: #{cur.date} prev: #{prev.date} today: #{today} cur_closed: #{cur.is_closed?} prev_closed: #{prev.is_closed?}"
+      (cur.date <= today) && (cur.is_closed? || prev.is_closed?)
+    }
+    if !result 
+      if days.size > 0
+        result = days.size - 1
+      else
+        result = 0
+      end
+    end
+    return result
   end
 
 end
@@ -334,6 +373,14 @@ class TodoDay
     return stack.first[:children]
   end
 
+  def is_any_open?
+    return lines.any? { |line| line =~ /^\s*(-\s+)?\[\s\]/ }
+  end
+
+  def is_closed?
+    return !is_any_open?
+  end
+
   def close
 
     unfinished_lines = []
@@ -438,6 +485,214 @@ class TodoDay
     @lines = TodoDay::structure_to_a(my_structure)
 
     lines.concat(end_lines)
+  end
+
+end
+
+class Recurrences
+
+  # Array of TodoDay objects in reverse chronological order (newest day first)!
+  attr_accessor :rules
+
+  def determine_recurring_tasks(from_date, to_date)
+
+    lines = []
+    section = nil
+
+    rules.each { |rule|
+
+      limit = rule[:limit] || (rule[:mode] == 'DAILY' ? 1 : nil)
+
+      # puts rule[:rule].between(from_date.to_time, to_date.to_time, limit: limit).inspect
+  
+      rule[:rule].between(from_date.to_time, to_date.to_time, limit: limit).each { |date|
+
+        # Prepend section if it has changed and exists
+        if rule[:section] != section
+          section = rule[:section]
+          lines << section if section != nil
+        end
+
+        startDate = rule[:rule].dtstart.to_time
+
+        task = rule[:text].gsub(/%(\w+)%/) { |_|
+          
+          cmd = $~[1] 
+          case cmd.downcase
+          when 'recurrence', 'age'
+            rule[:rule].between(startDate, date.to_time).size
+
+          when 'recurrenceth', 'ageth'
+            require 'active_support'
+            rule[:rule].between(startDate, date.to_time).size.ordinalize
+
+          when 'quarter'
+            date.month / 4 + 1
+
+          else
+            date.strftime("%#{cmd}")            
+          end
+        }
+
+        # Append the task
+        lines << " - [ ] #{task}"
+      
+      }  
+    }
+
+    return lines
+  
+  end
+
+  def self.from_s(s)
+
+    require 'rrule'
+
+    r = Recurrences.new
+    r.rules = []
+
+    mode = nil
+    section = nil
+
+    y = Date.today.year
+    # m = Date.today.month
+    # d = Date.today.day
+
+    s.each_line { |line|
+
+      if line =~ /^\s*\#\s*(yearly|monthly|weekly|daily)/i
+        mode = $1.upcase
+        section = nil
+        next
+      end
+
+      if line =~ /^(\w+.*)$/
+        section = $1
+        next
+      end
+      
+      # Empty line
+      if line =~ /^\s*-\s+\[\s\]\s+(.*)/
+        raise "No recurrence mode set. Add a section with 'yearly', 'monthly' etc." if mode == nil
+        r.rules << {rule: RRule.parse("FREQ=#{mode}", dtstart: Date.new(y-1, 1, 1)), text: $1, section: section, mode: mode}
+        next
+      end
+
+      # ISO and european date format
+      if line =~ /^\s*-\s+(\d\d\d\d\d\d\d\d|\d\d\d\d-\d\d-\d\d|\d{1,2}\.\d{1,2}\.\d{4})\s+\[\s\]\s+(.*)/
+        raise "No recurrence mode set. Add a section with 'yearly', 'monthly' etc." if mode == nil
+        r.rules << {rule: RRule.parse("FREQ=#{mode}", dtstart: Date.parse($1)), text: $2, section: section, mode: mode}
+        next
+      end
+
+      # US date format
+      if line =~ /^\s*-\s+(\d{1,2}\/\d{1,2}\/\d{4})\s+\[\s\]\s+(.*)/
+        raise "No recurrence mode set. Add a section with 'yearly', 'monthly' etc." if mode == nil
+        r.rules << {rule: RRule.parse("FREQ=#{mode}", dtstart: Date.strptime($1, "%m/%d/%Y")), text: $2, section: section, mode: mode}
+        next
+      end
+
+      # Short european date format '13.01' for yearly recurrences
+      if mode == 'YEARLY' && line =~ /^\s*-\s+(\d{1,2}\.\d{1,2})\.?\s+\[\s\]\s+(.*)/
+        raise "No recurrence mode set. Add a section with 'yearly', 'monthly' etc." if mode == nil
+        r.rules << {rule: RRule.parse("FREQ=#{mode}", dtstart: Date.strptime($1, '%d.%m')), text: $2, section: section, mode: mode}
+        next
+      end
+
+      # Short US date format 01/13 for yearly recurrences
+      if mode == 'YEARLY' && line =~ /^\s*-\s+(\d{1,2}\/\d{1,2})\s+\[\s\]\s+(.*)/
+        raise "No recurrence mode set. Add a section with 'yearly', 'monthly' etc." if mode == nil
+        r.rules << {rule: RRule.parse("FREQ=#{mode}", dtstart: Date.strptime($1, "%m/%d")), text: $2, section: section, mode: mode}
+        next
+      end
+
+      # Short date format '13.' for monthly recurrences
+      if mode == 'MONTHLY' && line =~ /^\s*-\s+(\d{1,2})\.?\s+\[\s\]\s+(.*)/
+        raise "No recurrence mode set. Add a section with 'yearly', 'monthly' etc." if mode == nil
+        r.rules << {rule: RRule.parse("FREQ=#{mode};BYMONTHDAY=#{$1}", dtstart: Date.new(y-1, 1, 1)), text: $2, section: section, mode: mode}
+        next
+      end
+
+      # Weekday format
+      if mode == 'WEEKLY' && line =~ /^\s*-\s+(mo|tu|we|th|fr|sa|su)\p{Alpha}*\s+\[\s\]\s+(.*)/i
+        raise "No recurrence mode set. Add a section with 'yearly', 'monthly' etc." if mode == nil
+
+        startDate = Date.new(y-1, 1, 1)
+        r.rules << {rule: RRule.parse("FREQ=#{mode};BYDAY=#{$1.upcase}", dtstart: startDate), 
+          text: $2, 
+          section: section, 
+          mode: mode
+        }
+        next
+      end
+
+      # RRULE format, e.g:
+      # # Weekly
+      # - FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,TH [ ] Submit timesheet 
+      rrulevoc = 'RRULE|LIMIT|FREQ|COUNT|UNTIL|INTERVAL|BYHOUR|BYMINUTE|BYSECOND|BYDAY|BYSETPOS|WKST|BYMONTH|BYMONTHDAY|BYWEEKNO|BYYEARDAY'
+      
+      if line =~ /^\s*-\s+((?:#{rrulevoc}).*?)\s+\[\s\]\s+(.*)/
+
+        rules = $1
+        task = $2
+        
+        startDate = Date.new(y-1, 1, 1)
+        limit = nil
+        temp_mode = nil
+
+        has_prefix = rules =~ /^RRULE:/
+        rules = rules.delete_prefix('RRULE:') if has_prefix
+
+        # Append FREQ if not present
+        if !(rules =~ /FREQ=/) && mode != nil
+          rules = "FREQ=#{mode};#{rules}"
+        end
+        
+        # Filter DTSTART and LIMTI parameters which are custom
+        rules = rules.split(';').filter { |param| 
+          option, value = param.split('=')
+
+          case option
+          when 'START', "DTSTART", "TSTART"
+            startDate = Date.strptime(value, "%Y%m%d")
+            next false
+          when 'LIMIT'
+            limit = value.to_i
+            next false
+          when 'FREQ'
+            temp_mode = value
+            next true
+          end
+          true
+        }.join(';')
+
+        if limit == nil
+          case temp_mode
+          when 'DAILY'
+            limit = 1
+          else # 'WEEKLY', 'MONTHLY', 'YEARLY'
+            limit = 0
+          end          
+        end
+
+        rules = "RRULE:" + rules if has_prefix
+        
+        # if line =~ /^\s*-\s+(D?T?START[:=](\d{8});)?((#{rrulevoc}).*?)\s+\[\s\]\s+(.*)/
+
+        r.rules << { 
+          rule: RRule.parse(rules, dtstart: startDate), 
+          text: task, 
+          section: section,
+          limit: limit,
+          mode: temp_mode 
+        }
+        next        
+      end
+    }
+
+    # File.write('out.log', r.rules.map { |r| r.inspect }.join("\n")  , mode: 'a+')
+
+    return r
   end
 
 end
