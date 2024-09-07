@@ -144,7 +144,7 @@ module Curses
     end
 
     # Just like get_char, but will read \x1b[<csi>
-    # return it as a hash { csi: ... }, 
+    # return it as a hash { csi: ... },
     # everything else is just returned as-is
     def get_char2
       c = get_char
