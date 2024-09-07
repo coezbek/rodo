@@ -420,8 +420,8 @@ class Rodo
         if lines[@cursor.line] =~ /\[\s\]/
           lines[@cursor.line].gsub!(/\[\s\]/, "[x]")
           set_dirty
-        elsif lines[@cursor.line] =~ /\[[xX]\]/
-          lines[@cursor.line].gsub!(/\[[xX]\]/, "[ ]")
+        elsif lines[@cursor.line] =~ /\[[xX>]\]/
+          lines[@cursor.line].gsub!(/\[[xX>]\]/, "[ ]")
           set_dirty
         end
 
