@@ -25,6 +25,7 @@ require 'fileutils'
 require_relative 'rodo/curses_util'
 require_relative 'rodo/rodolib'
 require_relative 'rodo/commands'
+require_relative 'rodo/clipboard'
 require_relative "rodo/backup"
 
 CTRLC = 3
@@ -321,9 +322,38 @@ class Rodo
     end
   end
 
+  def process_html_paste(html, target: :txt)
+
+    require 'reverse_markdown'
+    markdown = ReverseMarkdown.convert html, unknown_tags: :bypass
+    markdown.gsub!(/&nbsp;|Â/, " ")
+
+    # Curses.debug "Markdown: #{markdown.inspect}"
+    
+    if target == :txt
+      require 'redcarpet'
+      require 'redcarpet/render_strip'    
+      return Redcarpet::Markdown.new(Redcarpet::Render::StripDown).render(markdown)
+    else
+      return markdown
+    end
+
+  end
+
   def process_paste(pasted)
 
-    pasted.gsub! /\r\n?/, "\n"
+    # If there is HTML on the clipboard, prefer this.
+    clip = Clipboard.get(:auto)
+    html = clip[:type]
+    Curses.debug "Pasted: #{clip.inspect}"
+    if clip[:type] == :html
+      pasted = process_html_paste(clip[:content], target: :md)
+    else
+      pasted = clip[:content]
+    end
+
+    # Normalize line endings 
+    pasted.gsub! /\r\n?/ , "\n"
     # Curses.debug "Pasted: #{pasted.inspect}"
 
     current_day = @journal.days[@cursor.day]
@@ -332,7 +362,9 @@ class Rodo
     # Todo Clean-up Pasted Special characters (bullets)
     pasted.gsub! /^\t/, " " # Replace initial tabs with 1 space
     pasted.gsub! /\t/, "  " # Replace other tabs with 2 spaces
-    pasted.gsub! /^(\s*)[•□○®◊§] /, "\\1- "
+    pasted.gsub! /^(\s*)[•□○®◊§] /, "\\1- " # Replace bullets with dashes
+    pasted.gsub! /^(\s*)[✓✔✗✘] /, "\\1- [x] " # Replace checkmarks with [x]
+
 
     case @mode
     when :journalling, :edit

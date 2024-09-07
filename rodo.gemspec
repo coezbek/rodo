@@ -32,6 +32,10 @@ Gem::Specification.new do |spec|
   # Runtime dependencies
   spec.add_dependency "curses", "~> 1.4"
   spec.add_dependency "warning", "~> 1.0"
+  spec.add_dependency "reverse_markdown", "~> 2.0" # Used for reverse markdown parsing
+  spec.add_dependency "rrule", "~> 0.6"
+  spec.add_dependency "redcarpet", "~> 3.6" # Used for reverse markdown parsing
+  spec.add_dependency "timecop", "~> 0.9.10" # For testing time-dependent code
 
   # Development dependencies
   spec.add_development_dependency "rspec", "~> 3.10"
