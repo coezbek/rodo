@@ -296,18 +296,42 @@ class Rodo
     return result
   end
 
-  def render_windows
-
-    current_day = @journal.days[@cursor.day]
-
-    @win1.box
-
+  def render_debug_window
     if Curses.debug_win
       Curses.debug_win.setpos(0, 0)
       Curses.debug_win.puts "Cursor @ #{@cursor.line}"
       Curses.debug_win.puts "Mode: #{@mode}"
       Curses.debug_win.refresh
     end
+  end
+
+  def render_future_window
+    if Curses.future_win
+      Curses.future_win.clear
+      Curses.future_win.setpos(1, 0)
+
+      upcoming_lines = @journal.upcoming(@cursor.day)
+
+      if upcoming_lines
+        raise Exception.new(upcoming_lines.inspect) if !(upcoming_lines.instance_of? String)
+        Curses.future_win.puts upcoming_lines
+      else
+        Curses.future_win.puts "No upcoming todos"
+      end
+      Curses.future_win.refresh
+    end
+  end
+
+
+  def render_windows
+
+    current_day = @journal.days[@cursor.day]
+
+    @win1.box
+
+    render_debug_window
+
+    render_future_window
 
     # Next / prev Navigation
     has_next_day = @cursor.day > 0

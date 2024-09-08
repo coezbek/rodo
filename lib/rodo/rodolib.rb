@@ -146,6 +146,40 @@ class Journal
     return target_day
   end
 
+  #
+  # Returns upcoming todos taking recurring events into account
+  #
+  def upcoming(day_index)
+
+    if day_index == 0
+      journal_days = {}
+    else
+      journal_days = days.take( day_index ).reverse.map { |day| [day.date, day] }.to_h
+    end
+    recurrences_days = @recurrences.determine_recurring_tasks(Date.today, Date.today + 60, by_date: true)
+    
+    upcoming_dates = (journal_days.keys + recurrences_days.keys).uniq.sort
+      
+    return upcoming_dates.map { |date|
+
+      lines = []
+      
+      if journal_days.has_key?(date)
+        if recurrences_days.has_key?(date)
+          lines = journal_days[date].dup.merge_lines(recurrences_days[date])
+        else
+          lines = journal_days[date].lines
+        end
+      else
+        lines = ["# #{date.strftime("%Y-%m-%d %a")}"]
+        lines += recurrences_days[date]
+        lines << ""
+      end
+
+      lines.join("\n")
+    }.join("\n") 
+  end
+
   # Postpones all unfinished todos to today's date
   # Returns the index of the target date to which things were postponed
   def close(day)
@@ -412,7 +446,6 @@ class TodoDay
 
   end
 
-
   # Merge alls entries from source into target
   def self.merge_structures(target, source)
     # Attempt 1.3:
@@ -494,9 +527,19 @@ class Recurrences
   # Array of TodoDay objects in reverse chronological order (newest day first)!
   attr_accessor :rules
 
-  def determine_recurring_tasks(from_date, to_date)
+  # Returns an array of lines which are recurring tasks between the given dates
+  #
+  # The format of the lines is:
+  # ```
+  # Section
+  #   - [ ] Task
+  # ```
+  #
+  # No date header is prepended to the task
+  #
+  def determine_recurring_tasks(from_date, to_date, by_date: false)
 
-    lines = []
+    lines = {}
     section = nil
 
     rules.each { |rule|
@@ -507,10 +550,15 @@ class Recurrences
   
       rule[:rule].between(from_date.to_time, to_date.to_time, limit: limit).each { |date|
 
+        lines[date] ||= []
+
         # Prepend section if it has changed and exists
         if rule[:section] != section
           section = rule[:section]
-          lines << section if section != nil
+          if section != nil
+            lines[date] << ""
+            lines[date] << section
+          end
         end
 
         startDate = rule[:rule].dtstart.to_time
@@ -535,12 +583,17 @@ class Recurrences
         }
 
         # Append the task
-        lines << " - [ ] #{task}"
+        lines[date] << " - [ ] #{task}"
       
       }  
     }
 
-    return lines
+    if by_date
+      # raise lines.sort_by { |k, _| k }.reverse.to_h.inspect
+      return lines.sort_by { |k, _| k }.reverse.to_h
+    else
+      return lines.values.flatten
+    end
   
   end
 
