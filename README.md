@@ -28,11 +28,11 @@ Rodo is work in progress but can already be used for basic todo tracking. Curren
 - Bracketed paste support allows to paste from the clipboard without seeing indentation artifacts.
 - Backup before save (stored to `_bak\`)
 
-## Recurring Todos
+### Recurring Todos
 
 Rodo has support for recurring todos, which you want to show up daily, weekly, monthly or yearly. 
 
-To define recurring tasks put a recurring.md file in the same directory as your plan.md. The format is as follows:
+To define recurring tasks put a `recurring.md` file in the same directory as your plan.md. The format is as follows:
 
 ```
 # Yearly
@@ -79,7 +79,7 @@ You can omit the `FREQ=WEEKLY` from the syntax, it is inferred from the section 
 
 You can prepend `DTSTART=YYYYMMDD;` or `DTSTART:YYYYMMDD;` to the RRULE to specify a start date for the recurring event. Caution: This is just parsed as YYYYMMDD and does not support any other date formats.
 
-### Limit of tasks 
+#### Limit of tasks 
 
 For daily todos, Rodo will by default at most create a single todo even if some days have passed while you last used Rodo. For example if you have defined a daily todo of " - [ ] Exercise 15 minutes", and you haven't used Rodo for two days, then only a single todo will be created. For yearly, monthly and weekly todos, Rodo will not skip over todos, but add all past todos. You can adjust this behavior by adding 'LIMIT=n' where 0 indicates no limit in batching and other integers indicate the maximum number of todos which are created in a single `t` (today) command.
 
@@ -92,7 +92,7 @@ Rodo supports the following placeholders in the recurring todos:
  - `%recurrenceth%` - Same as %recurrence% but in ordinal form (1st, 2nd, 3rd, ...)
  - All others such as `%Y%`, `%b%` as in [https://ruby-doc.org/stdlib-2.6.1/libdoc/date/rdoc/DateTime.html#method-i-strftime](strftime)
 
-### Examples
+#### Examples
 
 On the 1st of January, 1st of April, etc. the following todo will be created:
 ```
@@ -100,12 +100,11 @@ On the 1st of January, 1st of April, etc. the following todo will be created:
 - INTERVAL=3 [ ] Send quarterly investor report for Q%quarter% %Y% 
 ```
 
-## Things not working currently
+## Limitations / Things not working currently
 
 Rodo comes with no warranty and is still rough. The most notable things missing in the release 0.1.0:
 
  - No undo/redo
- - No autosave
  - No scrolling
  - No mouse interaction
  - No special handling for any markdown except unordered lists, headings and todos
@@ -118,7 +117,6 @@ Rodo supports the following command line options:
  - `-d` - Enable debug mode. This will show the debug info in a separate ncurses window.
  - `-f` - Enable the future todo window.
  - `-r=YYYYMMDD` - Output the todos for the given date including recurring tasks
-
 
 ## Installation & First Run
 
