@@ -68,7 +68,7 @@ By default Rodo assumes that a new year starts on January 1st, a new month on th
  - For all events:
    - `YYYYMMDD` or `DD.MM.YYYY` or `MM/DD/YYYY` Event will trigger based on the given date as the starting date. 
 
-For more complex recurring events, alternatively to the above shorthand formats, you can use the iCalender RRULE syntax. For example, to create a recurring event every 2 weeks on Monday and Thursdays, you can use the following syntax:
+For more complex recurring events, alternatively to the above shorthand formats, you can use the [iCalender RRULE syntax](https://datatracker.ietf.org/doc/html/rfc5545#section-3.8.5.3). For example, to create a recurring event every 2 weeks on Monday and Thursdays, you can use the following syntax:
 
 ```
 # Weekly
@@ -81,14 +81,14 @@ You can prepend `DTSTART=YYYYMMDD;` or `DTSTART:YYYYMMDD;` to the RRULE to speci
 
 #### Limit of tasks 
 
-For daily todos, Rodo will by default at most create a single todo even if some days have passed while you last used Rodo. For example if you have defined a daily todo of " - [ ] Exercise 15 minutes", and you haven't used Rodo for two days, then only a single todo will be created. For yearly, monthly and weekly todos, Rodo will not skip over todos, but add all past todos. You can adjust this behavior by adding 'LIMIT=n' where 0 indicates no limit in batching and other integers indicate the maximum number of todos which are created in a single `t` (today) command.
+For daily todos, Rodo will by default at most create a single todo even if some days have passed while you last used Rodo. For example if you have defined a daily todo of ` - [ ] Exercise 15 minutes`, and you haven't used Rodo for two days, then only a single todo will be created. For yearly, monthly and weekly todos, Rodo will not skip over todos, but add all past todos. You can adjust this behavior by adding `LIMIT=n` where `0` indicates no limit in batching and other integers indicate the maximum number of todos which are created in a single `t` (today) command.
 
 ### Expansion of placeholders
 
 Rodo supports the following placeholders in the recurring todos:
 
  - `%quarter%` - Returns the quarter of the current month (1-4)
- - `%recurrence%` - Returns the number of times since the DTSTART that this task was created (or better could have been created) (also `%age%`)
+ - `%recurrence%` - Returns the number of times since the `DTSTART` that this task was created (or better could have been created) (also `%age%`)
  - `%recurrenceth%` - Same as %recurrence% but in ordinal form (1st, 2nd, 3rd, ...)
  - All others such as `%Y%`, `%b%` as in [https://ruby-doc.org/stdlib-2.6.1/libdoc/date/rdoc/DateTime.html#method-i-strftime](strftime)
 
