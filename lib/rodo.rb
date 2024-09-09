@@ -201,7 +201,7 @@ class Rodo
   end
 
   def close_without_save
-    File.delete(backup_file_name)
+    File.delete(backup_file_name) if File.exist?(backup_file_name)
     return :close
   end
 
