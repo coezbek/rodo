@@ -156,7 +156,7 @@ class Journal
     else
       journal_days = days.take( day_index ).reverse.map { |day| [day.date, day] }.to_h
     end
-    recurrences_days = @recurrences.determine_recurring_tasks(Date.today, Date.today + 60, by_date: true)
+    recurrences_days = @recurrences&.determine_recurring_tasks(Date.today, Date.today + 60, by_date: true) || {}
     
     upcoming_dates = (journal_days.keys + recurrences_days.keys).uniq.sort
       
