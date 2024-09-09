@@ -75,9 +75,11 @@ For more complex recurring events, alternatively to the above shorthand formats,
 - FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,TH [ ] Submit timesheet 
 ```
 
+To build `RRULE` clauses you can use a calendar software and export to `ical` format and review the `RRULE` line or use a tool such as [https://jkbrzt.github.io/rrule/](https://jkbrzt.github.io/rrule/) to design/review the clause.
+
 You can omit the `FREQ=WEEKLY` from the syntax, it is inferred from the section header.
 
-You can prepend `DTSTART=YYYYMMDD;` or `DTSTART:YYYYMMDD;` to the RRULE to specify a start date for the recurring event. Caution: This is just parsed as YYYYMMDD and does not support any other date formats.
+You can prepend `DTSTART=YYYYMMDD;` or `DTSTART:YYYYMMDD;` to the `RRULE` to specify a start date for the recurring event. Caution: This is just parsed as YYYYMMDD and does not support any other date formats.
 
 #### Limit of tasks 
 
