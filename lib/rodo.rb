@@ -207,10 +207,17 @@ class Rodo
 
   def build_windows
 
-    @win1.close if @win1
+    if @win1
+      @win1.close
+      @win1 = nil
+    end
     if Curses.debug_win
       Curses.debug_win.close
       Curses.debug_win = nil
+    end
+    if Curses.future_win
+      Curses.future_win.close
+      Curses.future_win = nil
     end
 
     cols = Curses.cols / (1 + (@debug ? 1 : 0) + (@future ? 1 : 0))
@@ -220,6 +227,7 @@ class Rodo
     @win1 = Curses::Window.new(Curses.lines, cols, 0, cur_col)
     @win1.keypad = true
     @win1.timeout = BACKUP_INACTIVITY_INTERVAL_SECONDS * 1000 # Use 15s inactivity as an indicator for saving automatically
+
     @win1b = @win1.subwin(@win1.maxy - 2, @win1.maxx - 3, 1, 2)
 
     cur_col += cols
@@ -297,7 +305,7 @@ class Rodo
   end
 
   def render_debug_window
-    if Curses.debug_win
+    if @debug && Curses.debug_win
       Curses.debug_win.setpos(0, 0)
       Curses.debug_win.puts "Cursor @ #{@cursor.line}"
       Curses.debug_win.puts "Mode: #{@mode}"
@@ -306,19 +314,22 @@ class Rodo
   end
 
   def render_future_window
-    if Curses.future_win
-      Curses.future_win.clear
-      Curses.future_win.setpos(1, 0)
+    if @future && Curses.future_win
 
       upcoming_lines = @journal.upcoming(@cursor.day)
 
-      if upcoming_lines
-        raise Exception.new(upcoming_lines.inspect) if !(upcoming_lines.instance_of? String)
-        Curses.future_win.puts upcoming_lines
-      else
-        Curses.future_win.puts "No upcoming todos"
+      if @upcoming_lines != upcoming_lines
+        Curses.future_win.clear
+        Curses.future_win.setpos(1, 0)
+        if upcoming_lines
+          raise Exception.new(upcoming_lines.inspect) if !(upcoming_lines.instance_of? String)
+          Curses.future_win.puts upcoming_lines
+        else
+          Curses.future_win.puts "No upcoming todos"
+        end
+        Curses.future_win.refresh
+        @upcoming_lines = upcoming_lines
       end
-      Curses.future_win.refresh
     end
   end
 
@@ -326,9 +337,7 @@ class Rodo
   def render_windows
 
     current_day = @journal.days[@cursor.day]
-
     @win1.box
-
     render_debug_window
 
     render_future_window
@@ -811,6 +820,7 @@ class Rodo
 
         when '^'
           @future = !@future
+          @upcoming_lines = nil
           build_windows
 
         when Curses::KEY_UP
